@@ -5,6 +5,9 @@ Lib Torrent Client
 This is a library to interface with a variety of torrent clients,
 abstracting away the need to understand a specific client api.
 
+.. image:: https://travis-ci.org/JohnDoee/libtc.svg?branch=master
+    :target: https://travis-ci.org/JohnDoee/libtc
+
 Requirements
 --------------------------------
 
