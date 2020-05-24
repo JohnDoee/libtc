@@ -1,0 +1,4 @@
+deluge-client==1.9.0
+pytz==2020.1
+requests==2.23.0
+pytest==5.4.2

@@ -1,0 +1,10 @@
+language: python
+
+services:
+  - docker
+
+before_install:
+- docker pull johndoee/test-libtc
+
+script:
+- docker run --rm -ti -v ${TRAVIS_BUILD_DIR}/libtc:/libtc johndoee/test-libtc pytest "/libtc/tests"
