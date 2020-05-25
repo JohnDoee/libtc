@@ -12,6 +12,7 @@ from ..exceptions import FailedToExecuteException
 from ..torrent import TorrentData, TorrentState
 from ..baseclient import BaseClient
 from ..bencode import bencode
+from ..utils import has_minimum_expected_data, calculate_minimum_expected_data
 
 logger = logging.getLogger(__name__)
 
@@ -129,6 +130,11 @@ class TransmissionClient(BaseClient):
             return True
 
     def add(self, torrent, destination_path, fast_resume=False, add_name_to_folder=True, minimum_expected_data="none"):
+        current_expected_data = calculate_minimum_expected_data(torrent, destination_path, add_name_to_folder)
+        if not has_minimum_expected_data(minimum_expected_data, current_expected_data):
+            raise FailedToExecuteException(f"Minimum expected data not reached, wanted {minimum_expected_data} actual {current_expected_data}")
+        if current_expected_data != 'full':
+            fast_resume = False
         destination_path = destination_path.resolve()
         encoded_torrent = base64.b64encode(bencode(torrent)).decode()
 

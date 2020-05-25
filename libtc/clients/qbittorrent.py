@@ -10,6 +10,7 @@ from ..exceptions import FailedToExecuteException
 from ..torrent import TorrentData, TorrentState
 from ..baseclient import BaseClient
 from ..bencode import bencode
+from ..utils import has_minimum_expected_data, calculate_minimum_expected_data
 
 
 class QBittorrentClient(BaseClient):
@@ -99,6 +100,9 @@ class QBittorrentClient(BaseClient):
             return False
 
     def add(self, torrent, destination_path, fast_resume=False, add_name_to_folder=True, minimum_expected_data="none"):
+        current_expected_data = calculate_minimum_expected_data(torrent, destination_path, add_name_to_folder)
+        if not has_minimum_expected_data(minimum_expected_data, current_expected_data):
+            raise FailedToExecuteException(f"Minimum expected data not reached, wanted {minimum_expected_data} actual {current_expected_data}")
         create_subfolder_enabled = self.call("get", '/api/v2/app/preferences').json()['create_subfolder_enabled']
         changed_create_subfolder_enabled = False
         encoded_torrent = bencode(torrent)

@@ -13,7 +13,7 @@ from ..bencode import bencode
 from ..exceptions import FailedToExecuteException
 from ..torrent import TorrentData, TorrentState
 from ..baseclient import BaseClient
-from ..utils import map_existing_files
+from ..utils import map_existing_files, has_minimum_expected_data, calculate_minimum_expected_data
 
 
 class DelugeClient(BaseClient):
@@ -113,6 +113,9 @@ class DelugeClient(BaseClient):
             return False
 
     def add(self, torrent, destination_path, fast_resume=False, add_name_to_folder=True, minimum_expected_data="none"):
+        current_expected_data = calculate_minimum_expected_data(torrent, destination_path, add_name_to_folder)
+        if not has_minimum_expected_data(minimum_expected_data, current_expected_data):
+            raise FailedToExecuteException(f"Minimum expected data not reached, wanted {minimum_expected_data} actual {current_expected_data}")
         destination_path = destination_path.resolve()
         encoded_torrent = base64.b64encode(bencode(torrent))
         infohash = hashlib.sha1(bencode(torrent[b'info'])).hexdigest()

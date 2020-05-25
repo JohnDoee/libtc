@@ -49,3 +49,23 @@ def find_existing_files(torrent, path, add_name_to_folder=True):
             missing_size += size
 
     return found, missing, found_size, missing_size
+
+
+def calculate_minimum_expected_data(torrent, path, add_name_to_folder=True):
+    found, missing, found_size, missing_size = find_existing_files(torrent, path, add_name_to_folder=add_name_to_folder)
+    if not found_size:
+        return 'none'
+    elif found_size and missing_size:
+        return 'partial'
+    else:
+        return 'full'
+
+
+def has_minimum_expected_data(expected_data, actual_data):
+    if expected_data == 'none':
+        return True
+    elif expected_data == 'partial' and actual_data in ['partial', 'full']:
+        return True
+    elif expected_data == actual_data == 'full':
+        return True
+    return False
