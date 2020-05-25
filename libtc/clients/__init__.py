@@ -1,9 +1,9 @@
 from .deluge import DelugeClient
+from .fakeclient import FakeClient
+from .liltorrent import LilTorrentClient
+from .qbittorrent import QBittorrentClient
 from .rtorrent import RTorrentClient
 from .transmission import TransmissionClient
-from .fakeclient import FakeClient
-from .qbittorrent import QBittorrentClient
-from .liltorrent import LilTorrentClient
 
 TORRENT_CLIENT_MAPPING = {
     DelugeClient.identifier: DelugeClient,

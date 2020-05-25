@@ -1,21 +1,17 @@
+from .bencode import bdecode, bencode
 from .clients import *
+from .exceptions import FailedToExecuteException, LibTorrentClientException
 from .torrent import *
-from .bencode import bencode, bdecode
-from .exceptions import LibTorrentClientException, FailedToExecuteException
-
 
 __all__ = [
-    'DelugeClient',
-    'RTorrentClient',
-    'TransmissionClient',
-    'FakeClient',
-
-    'TorrentData',
-    'TorrentState',
-
-    'bencode',
-    'bdecode',
-
-    'LibTorrentClientException',
-    'FailedToExecuteException',
+    "DelugeClient",
+    "RTorrentClient",
+    "TransmissionClient",
+    "FakeClient",
+    "TorrentData",
+    "TorrentState",
+    "bencode",
+    "bdecode",
+    "LibTorrentClientException",
+    "FailedToExecuteException",
 ]

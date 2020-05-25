@@ -1,6 +1,6 @@
-import requests
-
 from urllib.parse import urljoin
+
+import requests
 
 from ..baseclient import BaseClient
 from ..exceptions import FailedToExecuteException
@@ -17,24 +17,24 @@ class LilTorrentClient(BaseClient):
 
     def _call(self, _method, url, *args, **kwargs):
         url = urljoin(self.url, url)
-        kwargs['auth'] = self.auth
-        kwargs['headers'] = kwargs.get('headers', {}).update(self.headers)
+        kwargs["auth"] = self.auth
+        kwargs["headers"] = kwargs.get("headers", {}).update(self.headers)
         try:
             return getattr(requests, _method)(url, *args, **kwargs).json()
         except RequestException:
             raise FailedToExecuteException()
 
     def _fetch_list_result(self, url):
-        return [TorrentData(**torrent) for torrent in self._call('get', url)]
+        return [TorrentData(**torrent) for torrent in self._call("get", url)]
 
     def list(self):
-        return self._fetch_list_result('list')
+        return self._fetch_list_result("list")
 
     def list_active(self):
-        return self._fetch_list_result('list_active')
+        return self._fetch_list_result("list_active")
 
     def start(self, infohash):
-        return self._call('post', 'start', params={'infohash': infohash})
+        return self._call("post", "start", params={"infohash": infohash})
 
     def stop(self, infohash):
-        return self._call('post', 'stop', params={'infohash': infohash})
+        return self._call("post", "stop", params={"infohash": infohash})

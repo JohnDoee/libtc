@@ -1,13 +1,13 @@
-import pytest
 import subprocess
 import tempfile
 import time
-
 from pathlib import Path
 
-from .basetest import *
+import pytest
 
 from libtc import DelugeClient
+
+from .basetest import *
 
 
 @pytest.fixture(scope="module")
@@ -25,7 +25,7 @@ def client():
             pytest.fail("Unable to get deluge auth")
 
         with auth_path.open() as f:
-            username, password = f.read().split('\n')[0].split(':')[:2]
+            username, password = f.read().split("\n")[0].split(":")[:2]
 
         client = DelugeClient("127.0.0.1", 58846, username, password, tmp_path)
         for _ in range(30):

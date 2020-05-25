@@ -1,20 +1,23 @@
 import logging
-
 from datetime import datetime
-from urllib.parse import urlsplit
 from pathlib import Path
+from urllib.parse import urlsplit
 from xml.parsers.expat import ExpatError
 from xmlrpc.client import Error as XMLRPCError
 from xmlrpc.client import ServerProxy
 
 import pytz
 
+from ..baseclient import BaseClient
+from ..bencode import bencode
 from ..exceptions import FailedToExecuteException
 from ..scgitransport import SCGITransport
 from ..torrent import TorrentData, TorrentState
-from ..baseclient import BaseClient
-from ..utils import map_existing_files, has_minimum_expected_data, calculate_minimum_expected_data
-from ..bencode import bencode
+from ..utils import (
+    calculate_minimum_expected_data,
+    has_minimum_expected_data,
+    map_existing_files,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +39,6 @@ def create_proxy(url):
         return ServerProxy(url)
 
 
-
 def bitfield_to_string(bitfield):
     """
     Converts a list of booleans into a bitfield
@@ -45,7 +47,7 @@ def bitfield_to_string(bitfield):
 
     for piece, bit in enumerate(bitfield):
         if bit:
-            retval[piece//8] |= 1 << (7 - piece % 8)
+            retval[piece // 8] |= 1 << (7 - piece % 8)
 
     return bytes(retval)
 
@@ -150,30 +152,41 @@ class RTorrentClient(BaseClient):
         except (XMLRPCError, ConnectionError, OSError, ExpatError):
             return False
 
-    def add(self, torrent, destination_path, fast_resume=False, add_name_to_folder=True, minimum_expected_data="none"):
-        current_expected_data = calculate_minimum_expected_data(torrent, destination_path, add_name_to_folder)
+    def add(
+        self,
+        torrent,
+        destination_path,
+        fast_resume=False,
+        add_name_to_folder=True,
+        minimum_expected_data="none",
+    ):
+        current_expected_data = calculate_minimum_expected_data(
+            torrent, destination_path, add_name_to_folder
+        )
         if not has_minimum_expected_data(minimum_expected_data, current_expected_data):
-            raise FailedToExecuteException(f"Minimum expected data not reached, wanted {minimum_expected_data} actual {current_expected_data}")
+            raise FailedToExecuteException(
+                f"Minimum expected data not reached, wanted {minimum_expected_data} actual {current_expected_data}"
+            )
         destination_path = destination_path.resolve()
 
         if fast_resume:
-            logger.info('Adding fast resume data')
+            logger.info("Adding fast resume data")
 
-            psize = torrent[b'info'][b'piece length']
-            pieces = len(torrent[b'info'][b'pieces']) // 20
+            psize = torrent[b"info"][b"piece length"]
+            pieces = len(torrent[b"info"][b"pieces"]) // 20
             bitfield = [True] * pieces
 
-            torrent[b'libtorrent_resume'] = {b'files': []}
+            torrent[b"libtorrent_resume"] = {b"files": []}
 
             files = map_existing_files(torrent, destination_path)
             current_position = 0
             for fp, f, size, exists in files:
-                logger.debug(f'Handling file {fp!r}')
+                logger.debug(f"Handling file {fp!r}")
 
-                result = {b'priority': 1, b'completed': int(exists)}
+                result = {b"priority": 1, b"completed": int(exists)}
                 if exists:
-                    result[b'mtime'] = int(fp.stat().st_mtime)
-                torrent[b'libtorrent_resume'][b'files'].append(result)
+                    result[b"mtime"] = int(fp.stat().st_mtime)
+                torrent[b"libtorrent_resume"][b"files"].append(result)
 
                 last_position = current_position + size
 
@@ -181,17 +194,21 @@ class RTorrentClient(BaseClient):
                 last_piece = (last_position + psize - 1) // psize
 
                 for piece in range(first_piece, last_piece):
-                    logger.debug(f'Setting piece {piece} to {exists}')
+                    logger.debug(f"Setting piece {piece} to {exists}")
                     bitfield[piece] *= exists
 
                 current_position = last_position
 
             if all(bitfield):
-                logger.info('This torrent is complete, setting bitfield to chunk count')
-                torrent[b'libtorrent_resume'][b'bitfield'] = pieces # rtorrent wants the number of pieces when torrent is complete
+                logger.info("This torrent is complete, setting bitfield to chunk count")
+                torrent[b"libtorrent_resume"][
+                    b"bitfield"
+                ] = pieces  # rtorrent wants the number of pieces when torrent is complete
             else:
-                logger.info('This torrent is incomplete, setting bitfield')
-                torrent[b'libtorrent_resume'][b'bitfield'] = bitfield_to_string(bitfield)
+                logger.info("This torrent is incomplete, setting bitfield")
+                torrent[b"libtorrent_resume"][b"bitfield"] = bitfield_to_string(
+                    bitfield
+                )
 
         encoded_torrent = bencode(torrent)
         cmd = [encoded_torrent]
@@ -201,7 +218,7 @@ class RTorrentClient(BaseClient):
             cmd.append(f'd.directory_base.set="{destination_path!s}"')
         logger.info(f"Sending to rtorrent: {cmd!r}")
         try:
-            self.proxy.load.raw_start('', *cmd)
+            self.proxy.load.raw_start("", *cmd)
         except (XMLRPCError, ConnectionError, OSError, ExpatError):
             raise FailedToExecuteException()
 

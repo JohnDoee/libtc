@@ -1,16 +1,15 @@
 import json
-import requests
-
 from pathlib import Path
 from urllib.parse import urljoin
 
+import requests
 from requests.exceptions import RequestException
 
-from ..exceptions import FailedToExecuteException
-from ..torrent import TorrentData, TorrentState
 from ..baseclient import BaseClient
 from ..bencode import bencode
-from ..utils import has_minimum_expected_data, calculate_minimum_expected_data
+from ..exceptions import FailedToExecuteException
+from ..torrent import TorrentData, TorrentState
+from ..utils import calculate_minimum_expected_data, has_minimum_expected_data
 
 
 class QBittorrentClient(BaseClient):
@@ -27,9 +26,12 @@ class QBittorrentClient(BaseClient):
         return getattr(self._session, _method)(urljoin(self.url, url), *args, **kwargs)
 
     def _login(self):
-        r = self._call('post', urljoin(self.url, '/api/v2/auth/login'),
-            headers={'Referer': self.url},
-            data={'username': self.username, 'password': self.password})
+        r = self._call(
+            "post",
+            urljoin(self.url, "/api/v2/auth/login"),
+            headers={"Referer": self.url},
+            data={"username": self.username, "password": self.password},
+        )
 
         return r.status_code == 200
 
@@ -52,32 +54,38 @@ class QBittorrentClient(BaseClient):
 
     def _fetch_list_result(self, filter):
         result = []
-        torrents = self.call('get', '/api/v2/torrents/info', params={'filter': filter}).json()
+        torrents = self.call(
+            "get", "/api/v2/torrents/info", params={"filter": filter}
+        ).json()
         for torrent in torrents:
-            if torrent['state'] == 'error':
+            if torrent["state"] == "error":
                 state = TorrentState.ERROR
-            if torrent['state'].startswith('paused') or torrent['state'].startswith('queued'):
+            if torrent["state"].startswith("paused") or torrent["state"].startswith(
+                "queued"
+            ):
                 state = TorrentState.STOPPED
             else:
                 state = TorrentState.ACTIVE
 
-            tracker = ''
-            if torrent['tracker']:
-                tracker = ".".join(torrent['tracker'].split("/")[2].rsplit(".", 2)[1:])
+            tracker = ""
+            if torrent["tracker"]:
+                tracker = ".".join(torrent["tracker"].split("/")[2].rsplit(".", 2)[1:])
 
-            result.append(TorrentData(
-                torrent['hash'],
-                torrent['name'],
-                torrent['size'],
-                state,
-                torrent['progress'] * 100.0,
-                torrent['uploaded'],
-                torrent['added_on'],
-                tracker,
-                torrent['upspeed'],
-                torrent['dlspeed'],
-                torrent['category'],
-            ))
+            result.append(
+                TorrentData(
+                    torrent["hash"],
+                    torrent["name"],
+                    torrent["size"],
+                    state,
+                    torrent["progress"] * 100.0,
+                    torrent["uploaded"],
+                    torrent["added_on"],
+                    tracker,
+                    torrent["upspeed"],
+                    torrent["dlspeed"],
+                    torrent["category"],
+                )
+            )
 
         return result
 
@@ -88,46 +96,72 @@ class QBittorrentClient(BaseClient):
         return self._fetch_list_result("active")
 
     def start(self, infohash):
-        self.call('get', '/api/v2/torrents/resume', params={'hashes': infohash})
+        self.call("get", "/api/v2/torrents/resume", params={"hashes": infohash})
 
     def stop(self, infohash):
-        self.call('get', '/api/v2/torrents/pause', params={'hashes': infohash})
+        self.call("get", "/api/v2/torrents/pause", params={"hashes": infohash})
 
     def test_connection(self):
         try:
-            return len(self.call('get', '/api/v2/app/version').text) > 0
+            return len(self.call("get", "/api/v2/app/version").text) > 0
         except FailedToExecuteException:
             return False
 
-    def add(self, torrent, destination_path, fast_resume=False, add_name_to_folder=True, minimum_expected_data="none"):
-        current_expected_data = calculate_minimum_expected_data(torrent, destination_path, add_name_to_folder)
+    def add(
+        self,
+        torrent,
+        destination_path,
+        fast_resume=False,
+        add_name_to_folder=True,
+        minimum_expected_data="none",
+    ):
+        current_expected_data = calculate_minimum_expected_data(
+            torrent, destination_path, add_name_to_folder
+        )
         if not has_minimum_expected_data(minimum_expected_data, current_expected_data):
-            raise FailedToExecuteException(f"Minimum expected data not reached, wanted {minimum_expected_data} actual {current_expected_data}")
-        create_subfolder_enabled = self.call("get", '/api/v2/app/preferences').json()['create_subfolder_enabled']
+            raise FailedToExecuteException(
+                f"Minimum expected data not reached, wanted {minimum_expected_data} actual {current_expected_data}"
+            )
+        create_subfolder_enabled = self.call("get", "/api/v2/app/preferences").json()[
+            "create_subfolder_enabled"
+        ]
         changed_create_subfolder_enabled = False
         encoded_torrent = bencode(torrent)
         data = {
-            'savepath': str(destination_path),
-            'skip_checking': (fast_resume and 'true' or 'false'),
+            "savepath": str(destination_path),
+            "skip_checking": (fast_resume and "true" or "false"),
         }
 
-        name = torrent[b'info'][b'name'].decode()
-        if b'files' in torrent[b'info']:
+        name = torrent[b"info"][b"name"].decode()
+        if b"files" in torrent[b"info"]:
             if create_subfolder_enabled and not add_name_to_folder:
-                self.call("post", '/api/v2/app/setPreferences', data={
-                    "json": json.dumps({"create_subfolder_enabled": False})
-                })
+                self.call(
+                    "post",
+                    "/api/v2/app/setPreferences",
+                    data={"json": json.dumps({"create_subfolder_enabled": False})},
+                )
                 changed_create_subfolder_enabled = True
             elif not create_subfolder_enabled and add_name_to_folder:
-                data['savepath'] = destination_path / name
-        self.call("post", '/api/v2/torrents/add', files={'torrents': encoded_torrent}, data=data)
+                data["savepath"] = destination_path / name
+        self.call(
+            "post",
+            "/api/v2/torrents/add",
+            files={"torrents": encoded_torrent},
+            data=data,
+        )
         if changed_create_subfolder_enabled:
-            self.call("post", '/api/v2/app/setPreferences', data={
-                "json": json.dumps({"create_subfolder_enabled": True})
-            })
+            self.call(
+                "post",
+                "/api/v2/app/setPreferences",
+                data={"json": json.dumps({"create_subfolder_enabled": True})},
+            )
 
     def remove(self, infohash):
-        self.call("get", "/api/v2/torrents/delete", params={"hashes": infohash, "deleteFiles": "false"})
+        self.call(
+            "get",
+            "/api/v2/torrents/delete",
+            params={"hashes": infohash, "deleteFiles": "false"},
+        )
 
     def retrieve_torrentfile(self, infohash):
         torrent_path = self.session_path / "data" / "BT_backup" / f"{infohash}.torrent"

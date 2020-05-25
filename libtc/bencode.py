@@ -11,41 +11,47 @@
 # Written by Petru Paler
 # Modified to have Python 3 support by Anders Jensen
 
+
 class BTFailure(Exception):
     pass
 
+
 def decode_int(x, f):
     f += 1
-    newf = x.find(b'e', f)
+    newf = x.find(b"e", f)
     n = int(x[f:newf])
     if x[f] == 45:
-        if x[f+1] == 48:
+        if x[f + 1] == 48:
             raise ValueError
-    elif x[f] == 48 and newf != f+1:
+    elif x[f] == 48 and newf != f + 1:
         raise ValueError
-    return (n, newf+1)
+    return (n, newf + 1)
+
 
 def decode_string(x, f):
-    colon = x.find(b':', f)
+    colon = x.find(b":", f)
     n = int(x[f:colon])
-    if x[f] == 48 and colon != f+1:
+    if x[f] == 48 and colon != f + 1:
         raise ValueError
     colon += 1
-    return (x[colon:colon+n], colon+n)
+    return (x[colon : colon + n], colon + n)
+
 
 def decode_list(x, f):
-    r, f = [], f+1
+    r, f = [], f + 1
     while x[f] != 101:
         v, f = decode_func[x[f]](x, f)
         r.append(v)
     return (r, f + 1)
 
+
 def decode_dict(x, f):
-    r, f = {}, f+1
+    r, f = {}, f + 1
     while x[f] != 101:
         k, f = decode_string(x, f)
         r[k], f = decode_func[x[f]](x, f)
     return (r, f + 1)
+
 
 decode_func = {}
 decode_func[108] = decode_list
@@ -54,6 +60,7 @@ decode_func[105] = decode_int
 
 for i in range(48, 59):
     decode_func[i] = decode_string
+
 
 def bdecode(x):
     try:
@@ -66,16 +73,19 @@ def bdecode(x):
 
 
 class Bencached(object):
-    __slots__ = ['bencoded']
+    __slots__ = ["bencoded"]
 
     def __init__(self, s):
         self.bencoded = s
 
-def encode_bencached(x,r):
+
+def encode_bencached(x, r):
     r.append(x.bencoded)
 
+
 def encode_int(x, r):
-    r.extend((b'i', str(x).encode(), b'e'))
+    r.extend((b"i", str(x).encode(), b"e"))
+
 
 def encode_bool(x, r):
     if x:
@@ -83,21 +93,25 @@ def encode_bool(x, r):
     else:
         encode_int(0, r)
 
+
 def encode_string(x, r):
-    r.extend((str(len(x)).encode(), b':', x))
+    r.extend((str(len(x)).encode(), b":", x))
+
 
 def encode_list(x, r):
-    r.append(b'l')
+    r.append(b"l")
     for i in x:
         encode_func[type(i)](i, r)
-    r.append(b'e')
+    r.append(b"e")
 
-def encode_dict(x,r):
-    r.append(b'd')
+
+def encode_dict(x, r):
+    r.append(b"d")
     for k, v in sorted(x.items()):
-        r.extend((str(len(k)).encode(), b':', k))
+        r.extend((str(len(k)).encode(), b":", k))
         encode_func[type(v)](v, r)
-    r.append(b'e')
+    r.append(b"e")
+
 
 encode_func = {}
 encode_func[Bencached] = encode_bencached
@@ -110,11 +124,13 @@ encode_func[dict] = encode_dict
 
 try:
     from types import BooleanType
+
     encode_func[BooleanType] = encode_bool
 except ImportError:
     pass
 
+
 def bencode(x):
     r = []
     encode_func[type(x)](x, r)
-    return b''.join(r)
+    return b"".join(r)

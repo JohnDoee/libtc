@@ -1,14 +1,13 @@
-import pytest
 import subprocess
 import tempfile
 import time
-
 from pathlib import Path
 
-from .basetest import *
+import pytest
 
 from libtc import RTorrentClient
 
+from .basetest import *
 
 RTORRENT_CONFIG = r"""#############################################################################
 # A minimal rTorrent configuration that provides the basic features
@@ -114,18 +113,21 @@ log.add_output = "info", "log"
 
 ### END of rtorrent.rc ###"""
 
+
 @pytest.fixture(scope="module")
 def client():
     with tempfile.TemporaryDirectory() as tmp_path:
         tmp_path = Path(tmp_path)
         config_content = RTORRENT_CONFIG.replace("%%TMPDIR%%", str(tmp_path))
-        config_file = tmp_path / '.rtorrent.rc'
-        with open(config_file, 'w') as f:
+        config_file = tmp_path / ".rtorrent.rc"
+        with open(config_file, "w") as f:
             f.write(config_content)
 
         p = subprocess.Popen(["rtorrent", "-n", "-o", f"import={config_file!s}"])
         print(f"scgi://{tmp_path!s}/.session/rpc.socket")
-        client = RTorrentClient(f"scgi://{tmp_path!s}/.session/rpc.socket", tmp_path / ".session")
+        client = RTorrentClient(
+            f"scgi://{tmp_path!s}/.session/rpc.socket", tmp_path / ".session"
+        )
         for _ in range(30):
             if client.test_connection():
                 break

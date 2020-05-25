@@ -1,7 +1,6 @@
 import base64
 import hashlib
 import os
-
 from datetime import datetime
 from pathlib import Path
 
@@ -9,11 +8,15 @@ import pytz
 from deluge_client import DelugeRPCClient
 from deluge_client.client import DelugeClientException
 
+from ..baseclient import BaseClient
 from ..bencode import bencode
 from ..exceptions import FailedToExecuteException
 from ..torrent import TorrentData, TorrentState
-from ..baseclient import BaseClient
-from ..utils import map_existing_files, has_minimum_expected_data, calculate_minimum_expected_data
+from ..utils import (
+    calculate_minimum_expected_data,
+    has_minimum_expected_data,
+    map_existing_files,
+)
 
 
 class DelugeClient(BaseClient):
@@ -112,27 +115,39 @@ class DelugeClient(BaseClient):
         except (DelugeClientException, ConnectionError, OSError):
             return False
 
-    def add(self, torrent, destination_path, fast_resume=False, add_name_to_folder=True, minimum_expected_data="none"):
-        current_expected_data = calculate_minimum_expected_data(torrent, destination_path, add_name_to_folder)
+    def add(
+        self,
+        torrent,
+        destination_path,
+        fast_resume=False,
+        add_name_to_folder=True,
+        minimum_expected_data="none",
+    ):
+        current_expected_data = calculate_minimum_expected_data(
+            torrent, destination_path, add_name_to_folder
+        )
         if not has_minimum_expected_data(minimum_expected_data, current_expected_data):
-            raise FailedToExecuteException(f"Minimum expected data not reached, wanted {minimum_expected_data} actual {current_expected_data}")
+            raise FailedToExecuteException(
+                f"Minimum expected data not reached, wanted {minimum_expected_data} actual {current_expected_data}"
+            )
         destination_path = destination_path.resolve()
         encoded_torrent = base64.b64encode(bencode(torrent))
-        infohash = hashlib.sha1(bencode(torrent[b'info'])).hexdigest()
-        options = {
-            'download_location': str(destination_path),
-            'seed_mode': fast_resume
-        }
+        infohash = hashlib.sha1(bencode(torrent[b"info"])).hexdigest()
+        options = {"download_location": str(destination_path), "seed_mode": fast_resume}
         if not add_name_to_folder:
-            files = map_existing_files(torrent, destination_path, add_name_to_folder=False)
+            files = map_existing_files(
+                torrent, destination_path, add_name_to_folder=False
+            )
             mapped_files = {}
             for i, (fp, f, size, exists) in enumerate(files):
                 mapped_files[i] = str(f)
-            options['mapped_files'] = mapped_files
+            options["mapped_files"] = mapped_files
 
         try:
             with self.client as client:
-                result = client.core.add_torrent_file('torrent.torrent', encoded_torrent, options)
+                result = client.core.add_torrent_file(
+                    "torrent.torrent", encoded_torrent, options
+                )
         except (DelugeClientException, ConnectionError, OSError):
             raise FailedToExecuteException()
 

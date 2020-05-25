@@ -1,33 +1,39 @@
 import random
 import string
-
 from datetime import datetime
 
 import pytz
 
-from ..torrent import TorrentData, TorrentState
 from ..baseclient import BaseClient
+from ..torrent import TorrentData, TorrentState
 
 TORRENTS = []
 
+
 def randomString(rng, letters, stringLength):
-    return ''.join(rng.choice(letters) for i in range(stringLength))
+    return "".join(rng.choice(letters) for i in range(stringLength))
+
 
 def generate_torrent(rng):
     size = rng.randint(100000, 7000000000)
     return TorrentData(
-        randomString(rng, 'abcdef0123456789', 40),
-        randomString(rng, string.ascii_lowercase + ' ' + '0123456789', rng.randint(10, 26)),
+        randomString(rng, "abcdef0123456789", 40),
+        randomString(
+            rng, string.ascii_lowercase + " " + "0123456789", rng.randint(10, 26)
+        ),
         size,
         TorrentState.ACTIVE,
         100,
         rng.randint(size // 10, size * 20),
-        datetime.utcfromtimestamp(rng.randint(1500000000, 1590000000)).astimezone(pytz.UTC),
+        datetime.utcfromtimestamp(rng.randint(1500000000, 1590000000)).astimezone(
+            pytz.UTC
+        ),
         "example.com",
         rng.randint(0, 500) == 0 and rng.randint(100, 1000000),
         0,
-        '',
+        "",
     )
+
 
 def touch_torrents(rng, torrents):
     for t in torrents:

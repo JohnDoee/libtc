@@ -8,17 +8,17 @@ import pytz
 import requests
 from requests.exceptions import RequestException
 
-from ..exceptions import FailedToExecuteException
-from ..torrent import TorrentData, TorrentState
 from ..baseclient import BaseClient
 from ..bencode import bencode
-from ..utils import has_minimum_expected_data, calculate_minimum_expected_data
+from ..exceptions import FailedToExecuteException
+from ..torrent import TorrentData, TorrentState
+from ..utils import calculate_minimum_expected_data, has_minimum_expected_data
 
 logger = logging.getLogger(__name__)
 
 
 class TransmissionClient(BaseClient):
-    identifier = 'transmission'
+    identifier = "transmission"
 
     _session_id = ""
 
@@ -125,40 +125,59 @@ class TransmissionClient(BaseClient):
             return False
         else:
             if session_data["rpc-version"] < 15:
-                raise FailedToExecuteException("You need to update to a newer version of Transmission")
+                raise FailedToExecuteException(
+                    "You need to update to a newer version of Transmission"
+                )
 
             return True
 
-    def add(self, torrent, destination_path, fast_resume=False, add_name_to_folder=True, minimum_expected_data="none"):
-        current_expected_data = calculate_minimum_expected_data(torrent, destination_path, add_name_to_folder)
+    def add(
+        self,
+        torrent,
+        destination_path,
+        fast_resume=False,
+        add_name_to_folder=True,
+        minimum_expected_data="none",
+    ):
+        current_expected_data = calculate_minimum_expected_data(
+            torrent, destination_path, add_name_to_folder
+        )
         if not has_minimum_expected_data(minimum_expected_data, current_expected_data):
-            raise FailedToExecuteException(f"Minimum expected data not reached, wanted {minimum_expected_data} actual {current_expected_data}")
-        if current_expected_data != 'full':
+            raise FailedToExecuteException(
+                f"Minimum expected data not reached, wanted {minimum_expected_data} actual {current_expected_data}"
+            )
+        if current_expected_data != "full":
             fast_resume = False
         destination_path = destination_path.resolve()
         encoded_torrent = base64.b64encode(bencode(torrent)).decode()
 
-        name = torrent[b'info'][b'name'].decode()
+        name = torrent[b"info"][b"name"].decode()
         if add_name_to_folder:
             download_dir = str(destination_path)
         else:
-            if b'files' in torrent[b'info']:
+            if b"files" in torrent[b"info"]:
                 download_dir = destination_path.parent
                 display_name = destination_path.name
             else:
                 download_dir = destination_path
                 display_name = name
 
-        kwargs = {'download-dir': str(download_dir), 'metainfo': encoded_torrent, 'paused': True}
-        result = self.call('torrent-add', **kwargs)
-        tid = result['torrent-added']['id']
+        kwargs = {
+            "download-dir": str(download_dir),
+            "metainfo": encoded_torrent,
+            "paused": True,
+        }
+        result = self.call("torrent-add", **kwargs)
+        tid = result["torrent-added"]["id"]
 
         if not add_name_to_folder:
-            self.call('torrent-rename-path', ids=[tid], path=str(name), name=str(display_name))
-        self.call('torrent-start', ids=[tid])
+            self.call(
+                "torrent-rename-path", ids=[tid], path=str(name), name=str(display_name)
+            )
+        self.call("torrent-start", ids=[tid])
 
     def remove(self, infohash):
-        self.call('torrent-remove', ids=[infohash])
+        self.call("torrent-remove", ids=[infohash])
 
     def retrieve_torrentfile(self, infohash):
         torrent_path = self.session_path / "torrents"

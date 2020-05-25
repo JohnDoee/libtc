@@ -39,7 +39,13 @@ class BaseClient(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def add(torrent, destination_path, fast_resume=False, add_name_to_folder=True, minimum_expected_data="none"):
+    def add(
+        torrent,
+        destination_path,
+        fast_resume=False,
+        add_name_to_folder=True,
+        minimum_expected_data="none",
+    ):
         """
         Add a new torrent,
 
