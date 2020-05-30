@@ -25,7 +25,6 @@ class DelugeClient(BaseClient):
     keys = [
         "name",
         "progress",
-        "download_location",
         "state",
         "total_size",
         "time_added",
@@ -41,7 +40,7 @@ class DelugeClient(BaseClient):
         self.port = port
         self.username = username
         self.password = password
-        self.session_path = Path(session_path)
+        self.session_path = session_path and Path(session_path)
 
     @property
     def client(self):
@@ -68,7 +67,6 @@ class DelugeClient(BaseClient):
             else:
                 state = TorrentState.STOPPED
 
-            print(torrent_data)
             result.append(
                 TorrentData(
                     infohash,
@@ -162,7 +160,39 @@ class DelugeClient(BaseClient):
             raise FailedToExecuteException()
 
     def retrieve_torrentfile(self, infohash):
+        if not self.session_path:
+            raise FailedToExecuteException("Session path is not configured")
         torrent_path = self.session_path / "state" / f"{infohash}.torrent"
         if not torrent_path.is_file():
-            raise FailedToExecuteException()
+            raise FailedToExecuteException("Torrent file does not exist")
         return torrent_path.read_bytes()
+
+    def get_download_path(self, infohash):
+        # Deluge has a download place and an internal mapping relative to the files
+        # which makes it a bit of a guesswork to figure out the download folder.
+        # The algorithm we will be using is, multifile and a single shared prefix (also single folder max).
+        try:
+            with self.client as client:
+                torrents = client.core.get_torrents_status(
+                    {"id": [infohash]}, ["name", "download_location", "files"]
+                )
+        except (DelugeClientException, ConnectionError, OSError):
+            raise FailedToExecuteException(
+                "Failed to fetch download_location from Deluge"
+            )
+
+        if not torrents:
+            raise FailedToExecuteException("Empty result from deluge")
+
+        torrent_data = torrents[infohash]
+        if (
+            len(torrent_data["files"]) == 1
+            and torrent_data["files"][0]["path"] == torrent_data["name"]
+        ):
+            return Path(torrent_data["download_location"])
+
+        prefixes = set(f["path"].split("/")[0] for f in torrent_data["files"])
+        if len(prefixes) == 1:
+            return Path(torrent_data["download_location"]) / list(prefixes)[0]
+        else:
+            return Path(torrent_data["download_location"])

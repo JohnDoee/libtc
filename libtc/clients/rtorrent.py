@@ -58,7 +58,7 @@ class RTorrentClient(BaseClient):
 
     def __init__(self, url, session_path=None):
         self.proxy = create_proxy(url)
-        self.session_path = Path(session_path)
+        self.session_path = session_path and Path(session_path)
 
     def _fetch_list_result(self, view):
         result = []
@@ -70,7 +70,6 @@ class RTorrentClient(BaseClient):
                 "d.name=",
                 "d.is_active=",
                 "d.message=",
-                "d.directory=",
                 "d.size_bytes=",
                 "d.completed_bytes=",
                 "d.up.total=",
@@ -90,9 +89,9 @@ class RTorrentClient(BaseClient):
             else:
                 state = TorrentState.ACTIVE
 
-            progress = (torrent[6] / torrent[5]) * 100
-            if torrent[11]:
-                tracker = ".".join(torrent[11][0][0].split("/")[2].rsplit(".", 2)[1:])
+            progress = (torrent[5] / torrent[4]) * 100
+            if torrent[10]:
+                tracker = ".".join(torrent[10][0][0].split("/")[2].rsplit(".", 2)[1:])
             else:
                 tracker = "None"
 
@@ -100,15 +99,15 @@ class RTorrentClient(BaseClient):
                 TorrentData(
                     torrent[0].lower(),
                     torrent[1],
-                    torrent[5],
+                    torrent[4],
                     state,
                     progress,
-                    torrent[7],
-                    datetime.utcfromtimestamp(torrent[10]).astimezone(pytz.UTC),
+                    torrent[6],
+                    datetime.utcfromtimestamp(torrent[9]).astimezone(pytz.UTC),
                     tracker,
+                    torrent[7],
                     torrent[8],
-                    torrent[9],
-                    torrent[12],
+                    torrent[11],
                 )
             )
 
@@ -229,7 +228,15 @@ class RTorrentClient(BaseClient):
             raise FailedToExecuteException()
 
     def retrieve_torrentfile(self, infohash):
+        if not self.session_path:
+            raise FailedToExecuteException("Session path is not configured")
         torrent_path = self.session_path / f"{infohash.upper()}.torrent"
         if not torrent_path.is_file():
-            raise FailedToExecuteException()
+            raise FailedToExecuteException("Torrent file does not exist")
         return torrent_path.read_bytes()
+
+    def get_download_path(self, infohash):
+        try:
+            return Path(self.proxy.d.directory(infohash))
+        except (XMLRPCError, ConnectionError, OSError, ExpatError):
+            raise FailedToExecuteException("Failed to retrieve download path")

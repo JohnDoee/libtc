@@ -1,6 +1,7 @@
 from .bencode import bdecode, bencode
 from .clients import *
 from .exceptions import FailedToExecuteException, LibTorrentClientException
+from .management import move_torrent
 from .torrent import *
 
 __all__ = [
@@ -14,4 +15,5 @@ __all__ = [
     "bdecode",
     "LibTorrentClientException",
     "FailedToExecuteException",
+    "move_torrent",
 ]

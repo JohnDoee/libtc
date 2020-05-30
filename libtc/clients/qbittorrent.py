@@ -19,7 +19,7 @@ class QBittorrentClient(BaseClient):
         self.url = url
         self.username = username
         self.password = password
-        self.session_path = Path(session_path)
+        self.session_path = session_path and Path(session_path)
         self._session = requests.Session()
 
     def _call(self, _method, url, *args, **kwargs):
@@ -164,7 +164,30 @@ class QBittorrentClient(BaseClient):
         )
 
     def retrieve_torrentfile(self, infohash):
+        if not self.session_path:
+            raise FailedToExecuteException("Session path is not configured")
         torrent_path = self.session_path / "data" / "BT_backup" / f"{infohash}.torrent"
         if not torrent_path.is_file():
-            raise FailedToExecuteException()
+            raise FailedToExecuteException("Torrent file does not exist")
         return torrent_path.read_bytes()
+
+    def get_download_path(self, infohash):
+        torrents = self.call(
+            "get", "/api/v2/torrents/info", params={"hashes": infohash}
+        ).json()
+        torrent_files = self.call(
+            "get", "/api/v2/torrents/files", params={"hash": infohash}
+        ).json()
+        if not torrents or not torrent_files:
+            raise FailedToExecuteException("Failed to retrieve download path")
+
+        torrent = torrents[0]
+
+        if len(torrent_files) == 1 and torrent_files[0]["name"] == torrent["name"]:
+            return Path(torrent["save_path"])
+
+        prefixes = set(f["name"].split("/")[0] for f in torrent_files)
+        if len(prefixes) and list(prefixes)[0] == torrent["name"]:
+            return Path(torrent["save_path"]) / torrent["name"]
+        else:
+            return Path(torrent["save_path"])

@@ -68,3 +68,11 @@ class BaseClient(metaclass=ABCMeta):
         """
         Retrieve the torrent file and returns it content
         """
+
+    @abstractmethod
+    def get_download_path(infohash):
+        """
+        Find the path where the files are actually stored.
+
+        This path is expected to contain the actual files.
+        """

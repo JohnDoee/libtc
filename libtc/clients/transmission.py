@@ -24,7 +24,7 @@ class TransmissionClient(BaseClient):
 
     def __init__(self, url, session_path=None):
         self.url = url
-        self.session_path = Path(session_path)
+        self.session_path = session_path and Path(session_path)
 
     def _call(self, method, **kwargs):
         logger.debug(f"Calling {method!r} args {kwargs!r}")
@@ -106,6 +106,25 @@ class TransmissionClient(BaseClient):
             )
         return result
 
+    def get_download_path(self, infohash):
+        # It is impossible to determine the actual location of a file in transmission due to the
+        # inability to determine if a torrent is a single-file or multi-file torrent without checking
+        # This is best effort that will work in almost every case.
+        call_result = self.call(
+            "torrent-get", ids=[infohash], fields=["downloadDir", "name", "files"]
+        )
+        if not call_result["torrents"]:
+            raise FailedToExecuteException("Torrent not found")
+
+        torrent = call_result["torrents"][0]
+        if (
+            len(torrent["files"]) == 1
+            and torrent["files"][0]["name"] == torrent["name"]
+        ):
+            return Path(torrent["downloadDir"])
+        else:
+            return Path(torrent["downloadDir"]) / torrent["name"]
+
     def list(self):
         return self._fetch_list_result(False)
 
@@ -142,6 +161,7 @@ class TransmissionClient(BaseClient):
         current_expected_data = calculate_minimum_expected_data(
             torrent, destination_path, add_name_to_folder
         )
+        print(torrent, destination_path, add_name_to_folder)
         if not has_minimum_expected_data(minimum_expected_data, current_expected_data):
             raise FailedToExecuteException(
                 f"Minimum expected data not reached, wanted {minimum_expected_data} actual {current_expected_data}"
@@ -174,14 +194,17 @@ class TransmissionClient(BaseClient):
             self.call(
                 "torrent-rename-path", ids=[tid], path=str(name), name=str(display_name)
             )
+            self.call("torrent-verify", ids=[tid])
         self.call("torrent-start", ids=[tid])
 
     def remove(self, infohash):
         self.call("torrent-remove", ids=[infohash])
 
     def retrieve_torrentfile(self, infohash):
+        if not self.session_path:
+            raise FailedToExecuteException("Session path is not configured")
         torrent_path = self.session_path / "torrents"
         for f in torrent_path.iterdir():
             if f.name.endswith(f".{infohash[:16]}.torrent"):
                 return f.read_bytes()
-        raise FailedToExecuteException()
+        raise FailedToExecuteException("Torrent file does not exist")

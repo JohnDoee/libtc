@@ -27,7 +27,7 @@ def test_list(client):
 
 
 def verify_torrent_state(client, states):
-    hard_states = set(["infohash", "name",])
+    hard_states = set(["infohash", "name", "data_location",])
     for _ in range(50):
         found_invalid_state = False
         time.sleep(0.1)
@@ -40,13 +40,14 @@ def verify_torrent_state(client, states):
             assert isinstance(td, TorrentData)
             for k, v in state.items():
                 td_v = getattr(td, k)
-                if k in hard_states:
-                    print(k, v, td_v)
-                    assert v == td_v
-                elif v != td_v:
+                if v != td_v:
                     print(f"Invalid state {k} is {td_v} should be {v}")
-                    found_invalid_state = True
-                    break
+                    if k in hard_states:
+                        assert v == td_v
+                    else:
+                        print(f"Invalid state {k} is {td_v} should be {v}")
+                        found_invalid_state = True
+                        break
         if not found_invalid_state:
             return
     else:
@@ -70,9 +71,11 @@ def test_add_torrent_multifile(client, testfiles):
             }
         ],
     )
+    assert client.get_download_path(infohash) == testfiles / "Some-Release"
+
     client.remove(infohash)
     verify_torrent_state(client, [])
-    assert (Path(testfiles) / "Some-Release").exists()
+    assert (testfiles / "Some-Release").exists()
 
 
 def test_add_torrent_singlefile(client, testfiles):
@@ -92,10 +95,11 @@ def test_add_torrent_singlefile(client, testfiles):
             }
         ],
     )
+    assert client.get_download_path(infohash) == testfiles
 
     client.remove(infohash)
     verify_torrent_state(client, [])
-    assert (Path(testfiles) / "file_a.txt").exists()
+    assert (testfiles / "file_a.txt").exists()
 
 
 def test_add_torrent_multifile_no_add_name_to_folder(client, testfiles):
@@ -111,11 +115,36 @@ def test_add_torrent_multifile_no_add_name_to_folder(client, testfiles):
 
     verify_torrent_state(
         client,
-        [{"infohash": infohash, "state": TorrentState.ACTIVE, "progress": 100.0,}],
+        [{"infohash": infohash, "state": TorrentState.ACTIVE, "progress": 100.0}],
     )
+    assert client.get_download_path(infohash) == testfiles / "Some-Release"
     client.remove(infohash)
     verify_torrent_state(client, [])
-    assert (Path(testfiles) / "Some-Release").exists()
+    assert (testfiles / "Some-Release").exists()
+
+
+def test_add_torrent_multifile_no_add_name_to_folder_different_name(client, testfiles):
+    new_path = (testfiles / "Some-Release").rename(Path(testfiles) / "New-Some-Release")
+    torrent = testfiles / "Some-Release.torrent"
+    torrent_data = bdecode(torrent.read_bytes())
+    infohash = hashlib.sha1(bencode(torrent_data[b"info"])).hexdigest()
+    client.add(
+        torrent_data,
+        new_path,
+        fast_resume=False,
+        add_name_to_folder=False,
+        minimum_expected_data="full",
+    )
+
+    verify_torrent_state(
+        client,
+        [{"infohash": infohash, "state": TorrentState.ACTIVE, "progress": 100.0}],
+    )
+    assert client.get_download_path(infohash) == testfiles / "New-Some-Release"
+
+    client.remove(infohash)
+    verify_torrent_state(client, [])
+    assert (Path(testfiles) / "New-Some-Release").exists()
 
 
 def test_add_torrent_singlefile_no_add_name_to_folder(client, testfiles):
@@ -126,12 +155,13 @@ def test_add_torrent_singlefile_no_add_name_to_folder(client, testfiles):
 
     verify_torrent_state(
         client,
-        [{"infohash": infohash, "state": TorrentState.ACTIVE, "progress": 100.0,}],
+        [{"infohash": infohash, "state": TorrentState.ACTIVE, "progress": 100.0}],
     )
+    assert client.get_download_path(infohash) == testfiles
 
     client.remove(infohash)
     verify_torrent_state(client, [])
-    assert (Path(testfiles) / "file_a.txt").exists()
+    assert (testfiles / "file_a.txt").exists()
 
 
 def test_add_torrent_singlefile_no_data(client, testfiles, tmp_path):
@@ -143,10 +173,11 @@ def test_add_torrent_singlefile_no_data(client, testfiles, tmp_path):
     verify_torrent_state(
         client, [{"infohash": infohash, "state": TorrentState.ACTIVE, "progress": 0.0,}]
     )
+    assert client.get_download_path(infohash) == Path(tmp_path)
 
     client.remove(infohash)
     verify_torrent_state(client, [])
-    assert (Path(testfiles) / "file_a.txt").exists()
+    assert (testfiles / "file_a.txt").exists()
 
 
 def test_retrieve_torrent(client, testfiles):
