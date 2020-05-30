@@ -25,10 +25,10 @@ setup(
         "deluge-client==1.9.0",
         "pytz==2020.1",
         "requests==2.23.0",
+        "click==7.1.2",
+        "tabulate==0.8.7",
     ],
-    tests_require=[
-        "pytest==5.4.2",
-    ],
+    tests_require=["pytest==5.4.2",],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
@@ -38,4 +38,5 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
     ],
+    entry_points={"console_scripts": ["libtc = libtc.__main__:cli",]},
 )

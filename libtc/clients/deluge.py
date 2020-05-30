@@ -1,6 +1,5 @@
 import base64
 import hashlib
-import os
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlencode
