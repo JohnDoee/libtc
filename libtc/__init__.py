@@ -16,4 +16,5 @@ __all__ = [
     "LibTorrentClientException",
     "FailedToExecuteException",
     "move_torrent",
+    "parse_libtc_url",
 ]

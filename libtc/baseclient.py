@@ -76,3 +76,16 @@ class BaseClient(metaclass=ABCMeta):
 
         This path is expected to contain the actual files.
         """
+
+    @abstractmethod
+    def serialize_configuration():
+        """
+        Serializes the current configuration and returns it as a url.
+        """
+
+    @classmethod
+    @abstractmethod
+    def auto_configure():
+        """
+        Tries to auto-configure an instance of this client and return it.
+        """

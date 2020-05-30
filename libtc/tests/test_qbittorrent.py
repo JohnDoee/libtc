@@ -55,3 +55,10 @@ def client(request):
         ):
             pytest.fail("Settings were modified when they should not have been")
         p.kill()
+
+
+def test_serialize_configuration(client):
+    url = client.serialize_configuration()
+    url, query = url.split("?")
+    assert url == "qbittorrent+http://admin:adminadmin@localhost:8080/"
+    assert query.startswith("session_path=")

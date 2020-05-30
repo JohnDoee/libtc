@@ -1,3 +1,4 @@
+import re
 import subprocess
 import tempfile
 import time
@@ -124,7 +125,6 @@ def client():
             f.write(config_content)
 
         p = subprocess.Popen(["rtorrent", "-n", "-o", f"import={config_file!s}"])
-        print(f"scgi://{tmp_path!s}/.session/rpc.socket")
         client = RTorrentClient(
             f"scgi://{tmp_path!s}/.session/rpc.socket", tmp_path / ".session"
         )
@@ -137,3 +137,10 @@ def client():
             pytest.fail("Unable to start rtorrent")
         yield client
         p.kill()
+
+
+def test_serialize_configuration(client):
+    url = client.serialize_configuration()
+    url, query = url.split("?")
+    assert re.match(r"rtorrent\+scgi:///.+/.session/rpc.socket", url)
+    assert query.startswith("session_path=")

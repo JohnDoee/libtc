@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from urllib.parse import urljoin
+from urllib.parse import urlencode, urljoin, urlparse
 
 import requests
 from requests.exceptions import RequestException
@@ -191,3 +191,19 @@ class QBittorrentClient(BaseClient):
             return Path(torrent["save_path"]) / torrent["name"]
         else:
             return Path(torrent["save_path"])
+
+    def serialize_configuration(self):
+        parsed = urlparse(self.url)
+        url = f"{self.identifier}+{parsed.scheme}://{self.username}:{self.password}@{parsed.netloc}{parsed.path}"
+        query = {}
+        if self.session_path:
+            query["session_path"] = str(self.session_path)
+
+        if query:
+            url += f"?{urlencode(query)}"
+
+        return url
+
+    @classmethod
+    def auto_configure(cls):
+        raise FailedToExecuteException("Unable to auto configure this client type")

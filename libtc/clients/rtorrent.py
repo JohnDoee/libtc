@@ -1,7 +1,8 @@
 import logging
+import re
 from datetime import datetime
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import urlencode, urlsplit
 from xml.parsers.expat import ExpatError
 from xmlrpc.client import Error as XMLRPCError
 from xmlrpc.client import ServerProxy
@@ -57,6 +58,7 @@ class RTorrentClient(BaseClient):
     _methods = None
 
     def __init__(self, url, session_path=None):
+        self.url = url
         self.proxy = create_proxy(url)
         self.session_path = session_path and Path(session_path)
 
@@ -240,3 +242,45 @@ class RTorrentClient(BaseClient):
             return Path(self.proxy.d.directory(infohash))
         except (XMLRPCError, ConnectionError, OSError, ExpatError):
             raise FailedToExecuteException("Failed to retrieve download path")
+
+    def serialize_configuration(self):
+        url = f"{self.identifier}+{self.url}"
+        query = {}
+        if self.session_path:
+            query["session_path"] = str(self.session_path)
+
+        if query:
+            url += f"?{urlencode(query)}"
+
+        return url
+
+    @classmethod
+    def auto_configure(cls, path="~/.rtorrent.rc"):
+        # Does not work with latest rtorrent config
+        config_path = Path(path).expanduser()
+        if not config_path.is_file():
+            raise FailedToExecuteException("Unable to find config file")
+
+        try:
+            config_data = config_path.read_text()
+        except PermissionError:
+            raise FailedToExecuteException("Config file not accessible")
+
+        scgi_info = re.findall(
+            r"^\s*scgi_(port|local)\s*=\s*(.+)\s*$", str(config_data), re.MULTILINE
+        )
+        if not scgi_info:
+            raise FailedToExecuteException("No scgi info found in configuration file")
+
+        scgi_method, scgi_url = scgi_info[0]
+
+        if scgi_method == "port":
+            scgi_url = scgi_url.strip()
+        else:
+            scgi_url = Path(scgi_url.strip()).expanduser().resolve()
+
+        client = cls(f"scgi://{scgi_url}")
+        session_path = Path(client.proxy.session.path()).resolve()
+        if session_path.is_dir():
+            client.session_path = session_path
+        return client

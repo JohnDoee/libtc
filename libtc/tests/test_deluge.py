@@ -1,3 +1,4 @@
+import re
 import subprocess
 import tempfile
 import time
@@ -37,3 +38,10 @@ def client():
             pytest.fail("Unable to start deluge")
         yield client
         p.kill()
+
+
+def test_serialize_configuration(client):
+    url = client.serialize_configuration()
+    url, query = url.split("?")
+    assert re.match(r"deluge://localclient:[a-f0-9]{40}@127.0.0.1:58846", url)
+    assert query.startswith("session_path=")

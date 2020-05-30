@@ -3,6 +3,7 @@ import json
 import logging
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urlencode
 
 import pytz
 import requests
@@ -208,3 +209,40 @@ class TransmissionClient(BaseClient):
             if f.name.endswith(f".{infohash[:16]}.torrent"):
                 return f.read_bytes()
         raise FailedToExecuteException("Torrent file does not exist")
+
+    def serialize_configuration(self):
+        url = f"{self.identifier}+{self.url}"
+        query = {}
+        if self.session_path:
+            query["session_path"] = str(self.session_path)
+
+        if query:
+            url += f"?{urlencode(query)}"
+
+        return url
+
+    @classmethod
+    def auto_configure(cls, path="~/.config/transmission-daemon/settings.json"):
+        config_path = Path(path).expanduser()
+        if not config_path.is_file():
+            raise FailedToExecuteException("Unable to find config file")
+
+        try:
+            config_data = json.loads(config_path.read_text())
+        except PermissionError:
+            raise FailedToExecuteException("Config file not accessible")
+
+        print(config_data)
+
+        ip = config_data.get("rpc-bind-address")
+        port = config_data.get("rpc-port")
+        if ip == "0.0.0.0":
+            ip = "127.0.0.1"
+
+        if not ip:
+            raise FailedToExecuteException("Unable to find a bind ip")
+
+        if not port:
+            raise FailedToExecuteException("Unable to find port")
+
+        return cls(f"http://{ip}:{port}/transmission/rpc", config_path.parent)

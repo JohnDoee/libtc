@@ -38,3 +38,20 @@ def client():
             pytest.fail("Unable to start transmission")
         yield client
         p.kill()
+
+
+def test_serialize_configuration(client):
+    url = client.serialize_configuration()
+    url, query = url.split("?")
+    assert url == "transmission+http://localhost:9091/transmission/rpc"
+    assert query.startswith("session_path=")
+
+
+def test_auto_configure(client):
+    config_path = Path(client.session_path) / "settings.json"
+    print(config_path)
+    print(config_path.exists())
+    auto_client = TransmissionClient.auto_configure(config_path)
+    assert auto_client.serialize_configuration().replace(
+        "localhost", "127.0.0.1"
+    ) == client.serialize_configuration().replace("localhost", "127.0.0.1")

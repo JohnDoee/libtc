@@ -3,9 +3,10 @@ import hashlib
 import os
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urlencode
 
 import pytz
-from deluge_client import DelugeRPCClient
+from deluge_client import DelugeRPCClient, LocalDelugeRPCClient
 from deluge_client.client import DelugeClientException
 
 from ..baseclient import BaseClient
@@ -196,3 +197,19 @@ class DelugeClient(BaseClient):
             return Path(torrent_data["download_location"]) / list(prefixes)[0]
         else:
             return Path(torrent_data["download_location"])
+
+    def serialize_configuration(self):
+        url = f"{self.identifier}://{self.username}:{self.password}@{self.host}:{self.port}"
+        query = {}
+        if self.session_path:
+            query["session_path"] = str(self.session_path)
+
+        if query:
+            url += f"?{urlencode(query)}"
+
+        return url
+
+    @classmethod
+    def auto_configure(cls):
+        client = LocalDelugeRPCClient()
+        return cls(client.host, client.port, client.username, client.password)
