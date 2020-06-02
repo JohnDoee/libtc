@@ -57,10 +57,11 @@ class RTorrentClient(BaseClient):
     identifier = "rtorrent"
     _methods = None
 
-    def __init__(self, url, session_path=None):
+    def __init__(self, url, session_path=None, torrent_temp_path=None):
         self.url = url
         self.proxy = create_proxy(url)
         self.session_path = session_path and Path(session_path)
+        self.torrent_temp_path = torrent_temp_path and Path(torrent_temp_path)
 
     def _fetch_list_result(self, view):
         result = []

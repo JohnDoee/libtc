@@ -29,6 +29,7 @@ setup(
         "tabulate==0.8.7",
     ],
     tests_require=["pytest==5.4.2",],
+    extras_require={"liltorrent": ["Flask==1.1.2", "waitress==1.4.3"]},
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
@@ -38,5 +39,10 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
     ],
-    entry_points={"console_scripts": ["libtc = libtc.__main__:cli",]},
+    entry_points={
+        "console_scripts": [
+            "libtc = libtc.__main__:cli",
+            "liltorrent = libtc.liltorrent:cli",
+        ]
+    },
 )

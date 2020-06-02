@@ -4,10 +4,14 @@ from .exceptions import FailedToExecuteException, LibTorrentClientException
 from .management import move_torrent
 from .torrent import *
 
+__version__ = "1.0.0"
+
 __all__ = [
     "DelugeClient",
     "RTorrentClient",
     "TransmissionClient",
+    "QBittorrentClient",
+    "LilTorrentClient",
     "FakeClient",
     "TorrentData",
     "TorrentState",

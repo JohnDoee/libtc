@@ -45,6 +45,21 @@ Other:
 * Verify local content exist
 * Discover client config to autoconfigure clients
 
+LilTorrent usage
+---------------------------------
+
+This layer can work as an abstraction layer between local clients in different environments,
+e.g. in a docker container.
+
+.. code-block:: bash
+
+    pip install libtc[liltorrent]
+
+    LILTORRENT_APIKEY=secretapikey LILTORRENT_CLIENT=rtorrent:///path/to/scgi.socket liltorrent
+
+* `LILTORRENT_APIKEY` is the apikey that the server is accessible through
+* `LILTORRENT_CLIENT` is a client URL
+
 License
 ---------------------------------
 

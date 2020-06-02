@@ -1,3 +1,8 @@
+from datetime import datetime
+
+import pytz
+
+
 class TorrentData:
     def __init__(
         self,
@@ -27,6 +32,19 @@ class TorrentData:
 
     def __repr__(self):
         return f"TorrentData(infohash={self.infohash!r}, name={self.name!r})"
+
+    def serialize(self):
+        data = dict(self.__dict__)
+        data["added"] = data["added"].isoformat().split(".")[0].split("+")[0]
+        return data
+
+    @classmethod
+    def unserialize(cls, data):
+        data = dict(data)
+        data["added"] = datetime.strptime(data["added"], "%Y-%m-%dT%H:%M:%S").replace(
+            tzinfo=pytz.UTC
+        )
+        return cls(**data)
 
 
 class TorrentState:

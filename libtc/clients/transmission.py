@@ -162,7 +162,6 @@ class TransmissionClient(BaseClient):
         current_expected_data = calculate_minimum_expected_data(
             torrent, destination_path, add_name_to_folder
         )
-        print(torrent, destination_path, add_name_to_folder)
         if not has_minimum_expected_data(minimum_expected_data, current_expected_data):
             raise FailedToExecuteException(
                 f"Minimum expected data not reached, wanted {minimum_expected_data} actual {current_expected_data}"
@@ -174,7 +173,7 @@ class TransmissionClient(BaseClient):
 
         name = torrent[b"info"][b"name"].decode()
         if add_name_to_folder:
-            download_dir = str(destination_path)
+            download_dir = destination_path
         else:
             if b"files" in torrent[b"info"]:
                 download_dir = destination_path.parent
@@ -231,8 +230,6 @@ class TransmissionClient(BaseClient):
             config_data = json.loads(config_path.read_text())
         except PermissionError:
             raise FailedToExecuteException("Config file not accessible")
-
-        print(config_data)
 
         ip = config_data.get("rpc-bind-address")
         port = config_data.get("rpc-port")

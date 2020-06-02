@@ -49,8 +49,6 @@ def test_serialize_configuration(client):
 
 def test_auto_configure(client):
     config_path = Path(client.session_path) / "settings.json"
-    print(config_path)
-    print(config_path.exists())
     auto_client = TransmissionClient.auto_configure(config_path)
     assert auto_client.serialize_configuration().replace(
         "localhost", "127.0.0.1"

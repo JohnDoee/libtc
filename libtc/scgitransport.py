@@ -20,8 +20,7 @@ License:
 
 import socket
 from io import BytesIO
-
-from six.moves.xmlrpc_client import Transport
+from xmlrpc.client import Transport
 
 
 def encode_netstring(input):
