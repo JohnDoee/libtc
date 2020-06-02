@@ -7,6 +7,11 @@ from .qbittorrent import QBittorrentClient
 from .rtorrent import RTorrentClient
 from .transmission import TransmissionClient
 
+__all__ = [
+    "DelugeClient",
+    "FakeClient","LilTorrentClient", "QBittorrentClient","RTorrentClient","TransmissionClient","TORRENT_CLIENT_MAPPING","parse_libtc_url"
+]
+
 TORRENT_CLIENT_MAPPING = {
     DelugeClient.identifier: DelugeClient,
     RTorrentClient.identifier: RTorrentClient,
