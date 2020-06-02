@@ -161,7 +161,7 @@ class RTorrentClient(BaseClient):
         fast_resume=False,
         add_name_to_folder=True,
         minimum_expected_data="none",
-    ):
+    ): # TODO: use torrent_temp_path if payload is too big
         current_expected_data = calculate_minimum_expected_data(
             torrent, destination_path, add_name_to_folder
         )

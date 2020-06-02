@@ -30,3 +30,5 @@ def client(transmission_client):
 
     yield client
     p.kill()
+
+# TODO: test path mapping

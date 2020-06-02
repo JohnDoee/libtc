@@ -5,6 +5,7 @@ from datetime import datetime
 import pytz
 
 from ..baseclient import BaseClient
+from ..exceptions import FailedToExecuteException
 from ..torrent import TorrentData, TorrentState
 
 TORRENTS = []
@@ -62,3 +63,31 @@ class FakeClient(BaseClient):
 
     def stop(self, infohash):
         pass
+
+    def test_connection(self):
+        return True
+
+    def add(
+        self,
+        torrent,
+        destination_path,
+        fast_resume=False,
+        add_name_to_folder=True,
+        minimum_expected_data="none",
+    ):
+        pass
+
+    def remove(self, infohash):
+        pass
+
+    def retrieve_torrentfile(self, infohash):
+        raise FailedToExecuteException("Dummy client does not retrieve torrents")
+
+    def get_download_path(self, infohash):
+        raise FailedToExecuteException("No data exist")
+
+    def serialize_configuration(self):
+        raise FailedToExecuteException("Unserializable")
+
+    def auto_configure(self):
+        raise FailedToExecuteException("Auto configure not available")
