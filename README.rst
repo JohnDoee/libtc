@@ -63,7 +63,9 @@ The commandline interface allows for basic operations on torrents:
     libtc "transmission+http://127.0.0.1:9091/transmission/rpc?session_path=%7E/.config/transmission" list
 
     # Move torrent with infohash da39a3ee5e6b4b0d3255bfef95601890afd80709 from transmission to deluge
-    libtc "transmission+http://127.0.0.1:9091/transmission/rpc?session_path=%7E/.config/transmission" move "da39a3ee5e6b4b0d3255bfef95601890afd80709" "deluge://localclient:da39a3ee5e6b4b0d3255bfef95601890afd80709@127.0.0.1:58846?session_path=%7E/.config/deluge"
+    libtc "transmission+http://127.0.0.1:9091/transmission/rpc?session_path=%7E/.config/transmission" move \
+          "da39a3ee5e6b4b0d3255bfef95601890afd80709" \
+          "deluge://localclient:da39a3ee5e6b4b0d3255bfef95601890afd80709@127.0.0.1:58846?session_path=%7E/.config/deluge"
 
 
 Move torrent between clients:
@@ -106,7 +108,9 @@ rtorrent
 Syntax: :code:`rtorrent+<protocol>://<path_or_hostname>:<optional_port>?session_path=<path_to_session>&torrent_temp_path=<path_to_accessible_tmp>`
 
 Example: :code:`rtorrent+scgi:///path/to/scgi.socket?session_path=%7E/.rtorrent/&torrent_temp_path=%7E/.rtorrent/tmp-libtc`
+
 Example: :code:`rtorrent+scgi://127.0.0.1:5000?session_path=%7E/.rtorrent/&torrent_temp_path=%7E/.rtorrent/tmp-libtc`
+
 Example: :code:`rtorrent+http://127.0.0.1:8000/SCGI?session_path=%7E/.rtorrent/&torrent_temp_path=%7E/.rtorrent/tmp-libtc`
 
 Transmission
