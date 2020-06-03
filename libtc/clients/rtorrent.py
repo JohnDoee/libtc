@@ -161,7 +161,7 @@ class RTorrentClient(BaseClient):
         fast_resume=False,
         add_name_to_folder=True,
         minimum_expected_data="none",
-    ): # TODO: use torrent_temp_path if payload is too big
+    ):
         current_expected_data = calculate_minimum_expected_data(
             torrent, destination_path, add_name_to_folder
         )
@@ -219,7 +219,7 @@ class RTorrentClient(BaseClient):
         else:
             cmd.append(f'd.directory_base.set="{destination_path!s}"')
         logger.info(f"Sending to rtorrent: {cmd!r}")
-        try:
+        try:  # TODO: use torrent_temp_path if payload is too big
             self.proxy.load.raw_start("", *cmd)
         except (XMLRPCError, ConnectionError, OSError, ExpatError):
             raise FailedToExecuteException()

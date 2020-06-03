@@ -6,11 +6,10 @@ from pathlib import Path
 
 import pytest
 import pytz
-from libtc import FailedToExecuteException, bdecode
+
+from libtc import FailedToExecuteException, bdecode, liltorrent
 from libtc.baseclient import BaseClient
 from libtc.torrent import TorrentData, TorrentState
-
-from libtc import liltorrent
 
 GLOBAL_CONFIG = {
     "headers": {"Authorization": f"Bearer testkey"},
