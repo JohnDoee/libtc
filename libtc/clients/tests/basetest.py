@@ -26,7 +26,7 @@ def test_list(client):
     assert client.list() == []
 
 
-def verify_torrent_state(client, states):
+def verify_torrent_state(client, states, do_not_fail=False):
     hard_states = set(["infohash", "name", "data_location",])
     for _ in range(50):
         found_invalid_state = False
@@ -51,7 +51,8 @@ def verify_torrent_state(client, states):
         if not found_invalid_state:
             return
     else:
-        pytest.fail("Torrent states was never correctly added")
+        if not do_not_fail:
+            pytest.fail("Torrent states was never correctly added")
 
 
 def test_add_torrent_multifile(client, testfiles):
@@ -124,7 +125,8 @@ def test_add_torrent_multifile_no_add_name_to_folder(client, testfiles):
 
 
 def test_add_torrent_multifile_no_add_name_to_folder_different_name(client, testfiles):
-    new_path = (testfiles / "Some-Release").rename(Path(testfiles) / "New-Some-Release")
+    new_path = Path(testfiles) / "New-Some-Release"
+    (testfiles / "Some-Release").rename(new_path)
     torrent = testfiles / "Some-Release.torrent"
     torrent_data = bdecode(torrent.read_bytes())
     infohash = hashlib.sha1(bencode(torrent_data[b"info"])).hexdigest()
@@ -193,3 +195,102 @@ def test_retrieve_torrent(client, testfiles):
     )
 
     client.remove(infohash)
+
+
+def test_add_torrent_multifile_stopped(client, testfiles):
+    torrent = testfiles / "Some-Release.torrent"
+    torrent_data = bdecode(torrent.read_bytes())
+    infohash = hashlib.sha1(bencode(torrent_data[b"info"])).hexdigest()
+    client.add(torrent_data, testfiles, fast_resume=False, stopped=True)
+
+    verify_torrent_state(
+        client,
+        [
+            {
+                "infohash": infohash,
+                "name": "Some-Release",
+                "progress": 100.0,
+            }
+        ],
+        do_not_fail=True
+    )
+
+    verify_torrent_state(
+        client,
+        [
+            {
+                "infohash": infohash,
+                "state": TorrentState.STOPPED,
+            }
+        ],
+    )
+
+    client.start(infohash)
+
+    verify_torrent_state(
+        client,
+        [
+            {
+                "infohash": infohash,
+                "state": TorrentState.ACTIVE,
+            }
+        ],
+    )
+
+    assert client.get_download_path(infohash) == testfiles / "Some-Release"
+
+    client.remove(infohash)
+    verify_torrent_state(client, [])
+    assert (testfiles / "Some-Release").exists()
+
+
+def test_start_stop(client, testfiles):
+    torrent = testfiles / "Some-Release.torrent"
+    torrent_data = bdecode(torrent.read_bytes())
+    infohash = hashlib.sha1(bencode(torrent_data[b"info"])).hexdigest()
+    client.add(torrent_data, testfiles, fast_resume=False)
+    time.sleep(2) # Weird bug with Deluge
+
+    verify_torrent_state(
+        client,
+        [
+            {
+                "infohash": infohash,
+                "name": "Some-Release",
+                "state": TorrentState.ACTIVE,
+                "progress": 100.0,
+            }
+        ],
+    )
+
+    client.stop(infohash)
+
+    verify_torrent_state(
+        client,
+        [
+            {
+                "infohash": infohash,
+                "name": "Some-Release",
+                "state": TorrentState.STOPPED,
+                "progress": 100.0,
+            }
+        ],
+    )
+
+    client.start(infohash)
+
+    verify_torrent_state(
+        client,
+        [
+            {
+                "infohash": infohash,
+                "name": "Some-Release",
+                "state": TorrentState.ACTIVE,
+                "progress": 100.0,
+            }
+        ],
+    )
+
+    client.remove(infohash)
+    verify_torrent_state(client, [])
+    assert (testfiles / "Some-Release").exists()

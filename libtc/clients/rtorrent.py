@@ -55,6 +55,7 @@ def bitfield_to_string(bitfield):
 
 class RTorrentClient(BaseClient):
     identifier = "rtorrent"
+    display_name = "rtorrent"
     _methods = None
 
     def __init__(self, url, session_path=None, torrent_temp_path=None):
@@ -161,6 +162,7 @@ class RTorrentClient(BaseClient):
         fast_resume=False,
         add_name_to_folder=True,
         minimum_expected_data="none",
+        stopped=False,
     ):
         current_expected_data = calculate_minimum_expected_data(
             torrent, destination_path, add_name_to_folder
@@ -220,7 +222,10 @@ class RTorrentClient(BaseClient):
             cmd.append(f'd.directory_base.set="{destination_path!s}"')
         logger.info(f"Sending to rtorrent: {cmd!r}")
         try:  # TODO: use torrent_temp_path if payload is too big
-            self.proxy.load.raw_start("", *cmd)
+            if stopped:
+                self.proxy.load.raw("", *cmd)
+            else:
+                self.proxy.load.raw_start("", *cmd)
         except (XMLRPCError, ConnectionError, OSError, ExpatError):
             raise FailedToExecuteException()
 

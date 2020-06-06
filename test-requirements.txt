@@ -1,7 +1,7 @@
-deluge-client==1.9.0
-pytz==2020.1
-requests==2.23.0
-pytest==5.4.2
-Flask==1.1.2
-waitress==1.4.3
-click==7.1.2
+deluge-client~=1.9.0
+pytz~=2020.1
+requests~=2.23.0
+pytest~=5.4.2
+Flask~=1.1.2
+waitress~=1.4.3
+click~=7.1.2

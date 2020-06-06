@@ -14,6 +14,7 @@ from ..utils import calculate_minimum_expected_data, has_minimum_expected_data
 
 class QBittorrentClient(BaseClient):
     identifier = "qbittorrent"
+    display_name = "qBittorrent"
 
     def __init__(self, url, username, password, session_path=None):
         self.url = url
@@ -114,6 +115,7 @@ class QBittorrentClient(BaseClient):
         fast_resume=False,
         add_name_to_folder=True,
         minimum_expected_data="none",
+        stopped=False,
     ):
         current_expected_data = calculate_minimum_expected_data(
             torrent, destination_path, add_name_to_folder
@@ -131,6 +133,8 @@ class QBittorrentClient(BaseClient):
             "savepath": str(destination_path),
             "skip_checking": (fast_resume and "true" or "false"),
         }
+        if stopped:
+            data["paused"] = "true"
 
         name = torrent[b"info"][b"name"].decode()
         if b"files" in torrent[b"info"]:

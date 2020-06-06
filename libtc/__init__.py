@@ -13,6 +13,7 @@ __all__ = [
     "QBittorrentClient",
     "LilTorrentClient",
     "FakeClient",
+    "TORRENT_CLIENT_MAPPING",
     "TorrentData",
     "TorrentState",
     "bencode",

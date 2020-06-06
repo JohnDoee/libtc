@@ -52,6 +52,7 @@ TORRENT_LIST = [
 
 class DummyClient(BaseClient):
     identifier = "dummyclient"
+    display_name = "DummyClient"
 
     def __init__(self):
         self._call_log = []
@@ -78,6 +79,7 @@ class DummyClient(BaseClient):
         fast_resume=False,
         add_name_to_folder=True,
         minimum_expected_data="none",
+        stopped=False,
     ):
         self._call_log.append(
             (
@@ -87,6 +89,7 @@ class DummyClient(BaseClient):
                 fast_resume,
                 add_name_to_folder,
                 minimum_expected_data,
+                stopped,
             )
         )
 
@@ -175,6 +178,7 @@ def test_add(client):
     assert call_entry[3] == True
     assert call_entry[4] == True
     assert call_entry[5] == "full"
+    assert call_entry[6] == False
 
 
 def test_remove(client):

@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 class TransmissionClient(BaseClient):
     identifier = "transmission"
+    display_name = "Transmission"
 
     _session_id = ""
 
@@ -158,6 +159,7 @@ class TransmissionClient(BaseClient):
         fast_resume=False,
         add_name_to_folder=True,
         minimum_expected_data="none",
+        stopped=False,
     ):
         current_expected_data = calculate_minimum_expected_data(
             torrent, destination_path, add_name_to_folder
@@ -195,7 +197,8 @@ class TransmissionClient(BaseClient):
                 "torrent-rename-path", ids=[tid], path=str(name), name=str(display_name)
             )
             self.call("torrent-verify", ids=[tid])
-        self.call("torrent-start", ids=[tid])
+        if not stopped:
+            self.call("torrent-start", ids=[tid])
 
     def remove(self, infohash):
         self.call("torrent-remove", ids=[infohash])

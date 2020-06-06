@@ -45,6 +45,7 @@ def touch_torrents(rng, torrents):
 
 class FakeClient(BaseClient):
     identifier = "fakeclient"
+    display_name = "FakeClient"
 
     def __init__(self, seed, num_torrents):
         self.rng = random.Random(seed)
@@ -74,6 +75,7 @@ class FakeClient(BaseClient):
         fast_resume=False,
         add_name_to_folder=True,
         minimum_expected_data="none",
+        stopped=False,
     ):
         pass
 

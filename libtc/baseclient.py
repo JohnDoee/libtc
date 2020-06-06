@@ -8,6 +8,12 @@ class BaseClient(metaclass=ABCMeta):
         Text string used to identify this client
         """
 
+    @abstractproperty
+    def display_name():
+        """
+        Human readable name for this client
+        """
+
     @abstractmethod
     def list():
         """
@@ -45,6 +51,7 @@ class BaseClient(metaclass=ABCMeta):
         fast_resume=False,
         add_name_to_folder=True,
         minimum_expected_data="none",
+        stopped=False,
     ):
         """
         Add a new torrent,
@@ -55,6 +62,7 @@ class BaseClient(metaclass=ABCMeta):
         add_name_to_folder: add name from torrent to the folder, only multifile torrent
         minimum_expected_data: check local data and make sure minimum is there.
           Choices are: none, partial, full
+        stopped: add torrent in stopped state
         """
 
     @abstractmethod

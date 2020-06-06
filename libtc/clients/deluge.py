@@ -21,6 +21,7 @@ from ..utils import (
 
 class DelugeClient(BaseClient):
     identifier = "deluge"
+    display_name = "Deluge"
 
     keys = [
         "name",
@@ -120,6 +121,7 @@ class DelugeClient(BaseClient):
         fast_resume=False,
         add_name_to_folder=True,
         minimum_expected_data="none",
+        stopped=False,
     ):
         current_expected_data = calculate_minimum_expected_data(
             torrent, destination_path, add_name_to_folder
@@ -132,6 +134,8 @@ class DelugeClient(BaseClient):
         encoded_torrent = base64.b64encode(bencode(torrent))
         infohash = hashlib.sha1(bencode(torrent[b"info"])).hexdigest()
         options = {"download_location": str(destination_path), "seed_mode": fast_resume}
+        if stopped:
+            options["add_paused"] = True
         if not add_name_to_folder:
             files = map_existing_files(
                 torrent, destination_path, add_name_to_folder=False

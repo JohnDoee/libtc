@@ -87,6 +87,7 @@ def add():
     destination_path = Path(request.args.get("destination_path"))
     fast_resume = request.args.get("fast_resume") == "true"
     add_name_to_folder = request.args.get("add_name_to_folder") == "true"
+    stopped = request.args.get("stopped") == "true"
     torrent = bdecode(request.files["torrent"].read())
     client.add(
         torrent,
@@ -94,6 +95,7 @@ def add():
         fast_resume=fast_resume,
         add_name_to_folder=add_name_to_folder,
         minimum_expected_data=request.args.get("minimum_expected_data"),
+        stopped=stopped,
     )
     return jsonify({})
 

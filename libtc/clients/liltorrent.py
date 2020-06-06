@@ -22,6 +22,7 @@ def rewrite_path(path, path_mapping):
 
 class LilTorrentClient(BaseClient):
     identifier = "liltorrent"
+    display_name = "LilTorrent"
 
     def __init__(self, apikey, url, path_mapping=None):
         self.url = url
@@ -83,6 +84,7 @@ class LilTorrentClient(BaseClient):
         fast_resume=False,
         add_name_to_folder=True,
         minimum_expected_data="none",
+        stopped=False,
     ):
         destination_path = rewrite_path(destination_path, self.path_mapping)
         return self._call(
@@ -93,6 +95,7 @@ class LilTorrentClient(BaseClient):
                 "fast_resume": fast_resume and "true" or "false",
                 "add_name_to_folder": add_name_to_folder and "true" or "false",
                 "minimum_expected_data": minimum_expected_data,
+                "stopped": stopped and "true" or "false",
             },
             files={"torrent": bencode(torrent)},
         ).json()
