@@ -240,7 +240,7 @@ def test_move_multifile_stopped(
     torrent_data = bdecode(torrent.read_bytes())
     infohash = hashlib.sha1(bencode(torrent_data[b"info"])).hexdigest()
     source_client.add(torrent_data, testfiles, fast_resume=False)
-    time.sleep(2) # Weird bug with Deluge
+    time.sleep(2)  # Weird bug with Deluge
 
     verify_torrent_state(
         source_client,

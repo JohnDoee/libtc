@@ -7,7 +7,9 @@ from .torrent import TorrentState
 logger = logging.getLogger(__name__)
 
 
-def move_torrent(infohash, source_client, target_client, fast_resume=False): # TODO: preserver start/stop
+def move_torrent(
+    infohash, source_client, target_client, fast_resume=False
+):  # TODO: preserver start/stop
     source_client.test_connection()
     target_client.test_connection()
 
@@ -39,8 +41,6 @@ def move_torrent(infohash, source_client, target_client, fast_resume=False): # T
         add_name_to_folder = True
     else:
         add_name_to_folder = False
-
-    print('current state', source_torrent.state == TorrentState.STOPPED, source_torrent.state)
 
     if source_torrent.state == TorrentState.ACTIVE:
         source_client.stop(infohash)

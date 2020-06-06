@@ -205,36 +205,18 @@ def test_add_torrent_multifile_stopped(client, testfiles):
 
     verify_torrent_state(
         client,
-        [
-            {
-                "infohash": infohash,
-                "name": "Some-Release",
-                "progress": 100.0,
-            }
-        ],
-        do_not_fail=True
+        [{"infohash": infohash, "name": "Some-Release", "progress": 100.0,}],
+        do_not_fail=True,
     )
 
     verify_torrent_state(
-        client,
-        [
-            {
-                "infohash": infohash,
-                "state": TorrentState.STOPPED,
-            }
-        ],
+        client, [{"infohash": infohash, "state": TorrentState.STOPPED,}],
     )
 
     client.start(infohash)
 
     verify_torrent_state(
-        client,
-        [
-            {
-                "infohash": infohash,
-                "state": TorrentState.ACTIVE,
-            }
-        ],
+        client, [{"infohash": infohash, "state": TorrentState.ACTIVE,}],
     )
 
     assert client.get_download_path(infohash) == testfiles / "Some-Release"
@@ -249,7 +231,7 @@ def test_start_stop(client, testfiles):
     torrent_data = bdecode(torrent.read_bytes())
     infohash = hashlib.sha1(bencode(torrent_data[b"info"])).hexdigest()
     client.add(torrent_data, testfiles, fast_resume=False)
-    time.sleep(2) # Weird bug with Deluge
+    time.sleep(2)  # Weird bug with Deluge
 
     verify_torrent_state(
         client,
