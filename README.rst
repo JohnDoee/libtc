@@ -67,10 +67,27 @@ The commandline interface allows for basic operations on torrents:
           "da39a3ee5e6b4b0d3255bfef95601890afd80709" \
           "deluge://localclient:da39a3ee5e6b4b0d3255bfef95601890afd80709@127.0.0.1:58846?session_path=%7E/.config/deluge"
 
+Session path & fetching torrents
+---------------------------------
 
-Move torrent between clients:
-==============================
+This library can find and use the actual torrent files but this is generally not possible to the APIs.
+Therefore it must know where the torrents are stored locally.
 
+A list of relative torrent paths can be found here
+
+Deluge
+  <session_path>/state/
+
+qBittorrent
+  <session_path>/data/BT_backup/
+
+rtorrent
+  <session_path>/
+
+Transmission
+  <session_path>/torrents/
+
+These are subject to change depending on how it really works out with different client versions.
 
 URL Syntax
 ---------------------------------

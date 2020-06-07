@@ -8,7 +8,7 @@ from ..baseclient import BaseClient
 from ..exceptions import FailedToExecuteException
 from ..torrent import TorrentData, TorrentState
 
-TORRENTS = []
+TORRENTS = {}
 
 
 def randomString(rng, letters, stringLength):
@@ -48,16 +48,21 @@ class FakeClient(BaseClient):
     display_name = "FakeClient"
 
     def __init__(self, seed, num_torrents):
-        self.rng = random.Random(seed)
-        TORRENTS.extend([generate_torrent(self.rng) for _ in range(num_torrents)])
+        if seed not in TORRENTS:
+            rng = random.Random(seed)
+            TORRENTS[seed] = {
+                'rng': rng,
+                'torrents': [generate_torrent(rng) for _ in range(num_torrents)]
+            }
+        self._torrents = TORRENTS[seed]
 
     def list(self):
-        touch_torrents(self.rng, TORRENTS)
-        return TORRENTS
+        touch_torrents(self._torrents['rng'], self._torrents['torrents'])
+        return self._torrents['torrents']
 
     def list_active(self):
-        touch_torrents(self.rng, TORRENTS)
-        return [t for t in TORRENTS if t.upload_rate > 0]
+        touch_torrents(self._torrents['rng'], self._torrents['torrents'])
+        return [t for t in self._torrents['torrents'] if t.upload_rate > 0]
 
     def start(self, infohash):
         pass
