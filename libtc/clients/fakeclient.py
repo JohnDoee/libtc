@@ -51,18 +51,18 @@ class FakeClient(BaseClient):
         if seed not in TORRENTS:
             rng = random.Random(seed)
             TORRENTS[seed] = {
-                'rng': rng,
-                'torrents': [generate_torrent(rng) for _ in range(num_torrents)]
+                "rng": rng,
+                "torrents": [generate_torrent(rng) for _ in range(num_torrents)],
             }
         self._torrents = TORRENTS[seed]
 
     def list(self):
-        touch_torrents(self._torrents['rng'], self._torrents['torrents'])
-        return self._torrents['torrents']
+        touch_torrents(self._torrents["rng"], self._torrents["torrents"])
+        return self._torrents["torrents"]
 
     def list_active(self):
-        touch_torrents(self._torrents['rng'], self._torrents['torrents'])
-        return [t for t in self._torrents['torrents'] if t.upload_rate > 0]
+        touch_torrents(self._torrents["rng"], self._torrents["torrents"])
+        return [t for t in self._torrents["torrents"] if t.upload_rate > 0]
 
     def start(self, infohash):
         pass
