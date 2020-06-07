@@ -73,7 +73,9 @@ Session path & fetching torrents
 This library can find and use the actual torrent files but this is generally not possible to the APIs.
 Therefore it must know where the torrents are stored locally.
 
-A list of relative torrent paths can be found here
+These folders must contain the actual `.torrent` files.
+
+A list of relative torrent paths can be found here:
 
 Deluge
   <session_path>/state/
@@ -86,6 +88,9 @@ rtorrent
 
 Transmission
   <session_path>/torrents/
+
+An example could be transmission configured with `session_path=/tmp/transmission/` then the actual torrent files would
+be store in `/tmp/transmission/torrents/`.
 
 These are subject to change depending on how it really works out with different client versions.
 
