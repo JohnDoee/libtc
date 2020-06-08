@@ -96,14 +96,14 @@ class DelugeClient(BaseClient):
     def start(self, infohash):
         try:
             with self.client as client:
-                client.core.resume_torrent(infohash)
+                client.core.resume_torrent([infohash])
         except (DelugeClientException, ConnectionError, OSError):
             raise FailedToExecuteException()
 
     def stop(self, infohash):
         try:
             with self.client as client:
-                client.core.pause_torrent(infohash)
+                client.core.pause_torrent([infohash])
         except (DelugeClientException, ConnectionError, OSError):
             raise FailedToExecuteException()
 
