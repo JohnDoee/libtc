@@ -13,7 +13,7 @@ from ..baseclient import BaseClient
 from ..bencode import bencode
 from ..exceptions import FailedToExecuteException
 from ..scgitransport import SCGITransport
-from ..torrent import TorrentData, TorrentState
+from ..torrent import TorrentData, TorrentFile, TorrentState
 from ..utils import (
     calculate_minimum_expected_data,
     has_minimum_expected_data,
@@ -248,6 +248,32 @@ class RTorrentClient(BaseClient):
             return Path(self.proxy.d.directory(infohash))
         except (XMLRPCError, ConnectionError, OSError, ExpatError):
             raise FailedToExecuteException("Failed to retrieve download path")
+
+    def get_files(self, infohash):
+        result = []
+        try:
+            files = self.proxy.f.multicall(
+                infohash,
+                "",
+                "f.path=",
+                "f.size_bytes=",
+                "f.completed_chunks=",
+                "f.size_chunks=",
+            )
+            for f in files:
+                path, size, completed_chunks, size_chunks = f
+                if completed_chunks > size_chunks:
+                    completed_chunks = size_chunks
+
+                if size_chunks == 0:
+                    progress = 0.0
+                else:
+                    progress = (completed_chunks / size_chunks) * 100
+                result.append(TorrentFile(path, size, progress))
+        except (XMLRPCError, ConnectionError, OSError, ExpatError):
+            raise FailedToExecuteException("Failed to retrieve files")
+
+        return result
 
     def serialize_configuration(self):
         url = f"{self.identifier}+{self.url}"

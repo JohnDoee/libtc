@@ -8,7 +8,7 @@ from requests.exceptions import RequestException
 from ..baseclient import BaseClient
 from ..bencode import bencode
 from ..exceptions import FailedToExecuteException
-from ..torrent import TorrentData, TorrentState
+from ..torrent import TorrentData, TorrentFile, TorrentState
 from ..utils import calculate_minimum_expected_data, has_minimum_expected_data
 
 
@@ -108,6 +108,11 @@ class QBittorrentClient(BaseClient):
         except FailedToExecuteException:
             return False
 
+    def _check_create_subfolder_enabled(self):
+        return self.call("get", "/api/v2/app/preferences").json()[
+            "create_subfolder_enabled"
+        ]
+
     def add(
         self,
         torrent,
@@ -124,9 +129,7 @@ class QBittorrentClient(BaseClient):
             raise FailedToExecuteException(
                 f"Minimum expected data not reached, wanted {minimum_expected_data} actual {current_expected_data}"
             )
-        create_subfolder_enabled = self.call("get", "/api/v2/app/preferences").json()[
-            "create_subfolder_enabled"
-        ]
+        create_subfolder_enabled = self._check_create_subfolder_enabled()
         changed_create_subfolder_enabled = False
         encoded_torrent = bencode(torrent)
         data = {
@@ -195,6 +198,20 @@ class QBittorrentClient(BaseClient):
             return Path(torrent["save_path"]) / torrent["name"]
         else:
             return Path(torrent["save_path"])
+
+    def get_files(self, infohash):
+        create_subfolder_enabled = self._check_create_subfolder_enabled()
+        files = self.call(
+            "get", "/api/v2/torrents/files", params={"hash": infohash}
+        ).json()
+        result = []
+        for f in files:
+            if create_subfolder_enabled and "/" in f["name"]:
+                name = f["name"].split("/", 1)[1]
+            else:
+                name = f["name"]
+            result.append(TorrentFile(name, f["size"], f["progress"] * 100,))
+        return result
 
     def serialize_configuration(self):
         parsed = urlparse(self.url)

@@ -7,7 +7,7 @@ from requests.exceptions import RequestException
 from ..baseclient import BaseClient
 from ..bencode import bencode
 from ..exceptions import FailedToExecuteException
-from ..torrent import TorrentData
+from ..torrent import TorrentData, TorrentFile
 
 
 def rewrite_path(path, path_mapping):
@@ -113,6 +113,14 @@ class LilTorrentClient(BaseClient):
             "get", "get_download_path", params={"infohash": infohash}
         ).json()
         return rewrite_path(Path(path), self.reverse_path_mapping)
+
+    def get_files(self, infohash):
+        return [
+            TorrentFile.unserialize(torrent)
+            for torrent in self._call(
+                "get", "get_files", params={"infohash": infohash}
+            ).json()
+        ]
 
     def serialize_configuration(self):
         url = f"{self.identifier}+{self.url}"

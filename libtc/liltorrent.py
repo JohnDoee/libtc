@@ -129,6 +129,15 @@ def get_download_path():
     return jsonify(str(client.get_download_path(request.args.get("infohash"))))
 
 
+@app.route("/get_files")
+@require_apikey
+def get_files():
+    client = get_client()
+    return jsonify(
+        [t.serialize() for t in client.get_files(request.args.get("infohash"))]
+    )
+
+
 def cli():
     try:
         port = int(os.environ.get("LILTORRENT_PORT"))

@@ -9,7 +9,7 @@ import pytz
 
 from libtc import FailedToExecuteException, bdecode, liltorrent
 from libtc.baseclient import BaseClient
-from libtc.torrent import TorrentData, TorrentState
+from libtc.torrent import TorrentData, TorrentFile, TorrentState
 
 GLOBAL_CONFIG = {
     "headers": {"Authorization": f"Bearer testkey"},
@@ -47,6 +47,10 @@ TORRENT_LIST = [
         10,
         "",
     ),
+]
+TORRENT_FILE_LIST = [
+    TorrentFile("file1.txt", 12, 100.0),
+    TorrentFile("file2.txt", 11, 88.0),
 ]
 
 
@@ -102,6 +106,9 @@ class DummyClient(BaseClient):
     def get_download_path(self, infohash):
         return Path("/download/path")
 
+    def get_files(self, infohash):
+        return TORRENT_FILE_LIST
+
     def serialize_configuration(self):
         raise FailedToExecuteException("Not supported")
 
@@ -135,16 +142,21 @@ def test_bad_apikey(client):
 
 def test_list(client):
     r = client.get("/list", headers=GLOBAL_CONFIG["headers"])
-    assert [TorrentData.unserialize(t).__dict__ for t in json.loads(r.data)] == [
-        t.__dict__ for t in TORRENT_LIST
-    ]
+
+    torrents = [TorrentData.unserialize(t) for t in json.loads(r.data)]
+    assert len(torrents) == len(TORRENT_LIST)
+    for t_1, t_2 in zip(torrents, TORRENT_LIST):
+        for key in t_1.__slots__:
+            assert getattr(t_1, key) == getattr(t_2, key)
 
 
 def test_list_active(client):
     r = client.get("/list_active", headers=GLOBAL_CONFIG["headers"])
-    assert [TorrentData.unserialize(t).__dict__ for t in json.loads(r.data)] == [
-        t.__dict__ for t in TORRENT_LIST[:1]
-    ]
+    torrents = [TorrentData.unserialize(t) for t in json.loads(r.data)]
+    assert len(torrents) == len(TORRENT_LIST[:1])
+    for t_1, t_2 in zip(torrents, TORRENT_LIST[:1]):
+        for key in t_1.__slots__:
+            assert getattr(t_1, key) == getattr(t_2, key)
 
 
 def test_start(client):
@@ -201,3 +213,13 @@ def test_retrieve_torrent_file(client):
 def test_get_download_path(client):
     r = client.get("/get_download_path", headers=GLOBAL_CONFIG["headers"])
     assert json.loads(r.data) == "/download/path"
+
+
+def test_get_files(client):
+    r = client.get("/get_files", headers=GLOBAL_CONFIG["headers"])
+
+    torrents = [TorrentFile.unserialize(t) for t in json.loads(r.data)]
+    assert len(torrents) == len(TORRENT_FILE_LIST)
+    for t_1, t_2 in zip(torrents, TORRENT_FILE_LIST):
+        for key in t_1.__slots__:
+            assert getattr(t_1, key) == getattr(t_2, key)

@@ -12,7 +12,7 @@ from requests.exceptions import RequestException
 from ..baseclient import BaseClient
 from ..bencode import bencode
 from ..exceptions import FailedToExecuteException
-from ..torrent import TorrentData, TorrentState
+from ..torrent import TorrentData, TorrentFile, TorrentState
 from ..utils import calculate_minimum_expected_data, has_minimum_expected_data
 
 logger = logging.getLogger(__name__)
@@ -119,10 +119,7 @@ class TransmissionClient(BaseClient):
             raise FailedToExecuteException("Torrent not found")
 
         torrent = call_result["torrents"][0]
-        if (
-            len(torrent["files"]) == 1
-            and torrent["files"][0]["name"] == torrent["name"]
-        ):
+        if len(torrent["files"]) == 1 and "/" not in torrent["files"][0]["name"]:
             return Path(torrent["downloadDir"])
         else:
             return Path(torrent["downloadDir"]) / torrent["name"]
@@ -211,6 +208,25 @@ class TransmissionClient(BaseClient):
             if f.name.endswith(f".{infohash[:16]}.torrent"):
                 return f.read_bytes()
         raise FailedToExecuteException("Torrent file does not exist")
+
+    def get_files(self, infohash):
+        call_result = self.call("torrent-get", ids=[infohash], fields=["name", "files"])
+        torrent = call_result["torrents"][0]
+        files = torrent["files"]
+        is_singlefile = len(files) == 1 and "/" not in files[0]["name"]
+
+        result = []
+        for f in files:
+            name = f["name"]
+            if not is_singlefile:
+                name = name.split("/", 1)[1]
+            result.append(
+                TorrentFile(
+                    name, f["length"], (f["length"] / f["bytesCompleted"]) * 100
+                )
+            )
+
+        return result
 
     def serialize_configuration(self):
         url = f"{self.identifier}+{self.url}"

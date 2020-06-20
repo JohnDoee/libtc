@@ -85,6 +85,12 @@ class BaseClient(metaclass=ABCMeta):
         This path is expected to contain the actual files.
         """
 
+    # @abstractmethod
+    # def get_files(infohash):
+    #     """
+    #     Returns a list of `TorrentFile` in a given infohash.
+    #     """
+
     @abstractmethod
     def serialize_configuration():
         """

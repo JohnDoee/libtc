@@ -4,6 +4,20 @@ import pytz
 
 
 class TorrentData:
+    __slots__ = (
+        "infohash",
+        "name",
+        "size",
+        "state",
+        "progress",
+        "uploaded",
+        "added",
+        "tracker",
+        "upload_rate",
+        "download_rate",
+        "label",
+    )
+
     def __init__(
         self,
         infohash,
@@ -34,7 +48,7 @@ class TorrentData:
         return f"TorrentData(infohash={self.infohash!r}, name={self.name!r})"
 
     def serialize(self):
-        data = dict(self.__dict__)
+        data = {k: getattr(self, k) for k in self.__slots__}
         data["added"] = data["added"].isoformat().split(".")[0].split("+")[0]
         return data
 
@@ -51,3 +65,26 @@ class TorrentState:
     ACTIVE = "active"
     STOPPED = "stopped"
     ERROR = "error"
+
+
+class TorrentFile:
+    __slots__ = (
+        "path",
+        "size",
+        "progress",
+    )
+
+    def __init__(self, path, size, progress):
+        self.path = path
+        self.size = size
+        self.progress = progress
+
+    def __repr__(self):
+        return f"TorrentFile(path={self.path!r}, size={self.size!r}), progress={self.progress!r})"
+
+    def serialize(self):
+        return {k: getattr(self, k) for k in self.__slots__}
+
+    @classmethod
+    def unserialize(cls, data):
+        return cls(**data)

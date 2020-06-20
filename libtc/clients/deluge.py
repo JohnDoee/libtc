@@ -11,7 +11,7 @@ from deluge_client.client import DelugeClientException
 from ..baseclient import BaseClient
 from ..bencode import bencode
 from ..exceptions import FailedToExecuteException
-from ..torrent import TorrentData, TorrentState
+from ..torrent import TorrentData, TorrentFile, TorrentState
 from ..utils import (
     calculate_minimum_expected_data,
     has_minimum_expected_data,
@@ -191,7 +191,7 @@ class DelugeClient(BaseClient):
         torrent_data = torrents[infohash]
         if (
             len(torrent_data["files"]) == 1
-            and torrent_data["files"][0]["path"] == torrent_data["name"]
+            and "/" not in torrent_data["files"][0]["path"]
         ):
             return Path(torrent_data["download_location"])
 
@@ -200,6 +200,30 @@ class DelugeClient(BaseClient):
             return Path(torrent_data["download_location"]) / list(prefixes)[0]
         else:
             return Path(torrent_data["download_location"])
+
+    def get_files(self, infohash):
+        try:
+            with self.client as client:
+                torrents = client.core.get_torrents_status(
+                    {"id": [infohash]},
+                    ["name", "download_location", "files", "file_progress"],
+                )
+        except (DelugeClientException, ConnectionError, OSError):
+            raise FailedToExecuteException(
+                "Failed to fetch download_location from Deluge"
+            )
+
+        torrent_data = torrents[infohash]
+        files = torrent_data["files"]
+        file_progress = torrent_data["file_progress"]
+        is_singlefile = len(files) == 1 and "/" not in files[0]["path"]
+        result = []
+        for f, p in zip(files, file_progress):
+            name = f["path"]
+            if not is_singlefile:
+                name = name.split("/", 1)[1]
+            result.append(TorrentFile(name, f["size"], p * 100))
+        return result
 
     def serialize_configuration(self):
         url = f"{self.identifier}://{self.username}:{self.password}@{self.host}:{self.port}"

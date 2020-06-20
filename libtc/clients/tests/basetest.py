@@ -276,3 +276,83 @@ def test_start_stop(client, testfiles):
     client.remove(infohash)
     verify_torrent_state(client, [])
     assert (testfiles / "Some-Release").exists()
+
+
+def test_get_files_multifile(client, testfiles):
+    torrent = testfiles / "Some-Release.torrent"
+    torrent_data = bdecode(torrent.read_bytes())
+    infohash = hashlib.sha1(bencode(torrent_data[b"info"])).hexdigest()
+    client.add(torrent_data, testfiles, fast_resume=False)
+
+    verify_torrent_state(
+        client,
+        [
+            {
+                "infohash": infohash,
+                "name": "Some-Release",
+                "state": TorrentState.ACTIVE,
+                "progress": 100.0,
+            }
+        ],
+    )
+    assert client.get_download_path(infohash) == testfiles / "Some-Release"
+
+    files = sorted(client.get_files(infohash), key=lambda x: x.path)
+    expected_filenames = sorted(
+        [
+            "Sample/some-rls.mkv",
+            "Subs/some-subs.rar",
+            "Subs/some-subs.sfv",
+            "some-rls.nfo",
+            "some-rls.r00",
+            "some-rls.r01",
+            "some-rls.r02",
+            "some-rls.r03",
+            "some-rls.r04",
+            "some-rls.r05",
+            "some-rls.r06",
+            "some-rls.rar",
+            "some-rls.sfv",
+        ]
+    )
+    assert len(files) == len(expected_filenames)
+    for f, name in zip(files, expected_filenames):
+        assert f.path == name
+        assert f.progress == 100.0
+        assert f.size == 12
+
+    client.remove(infohash)
+    verify_torrent_state(client, [])
+    assert (testfiles / "Some-Release").exists()
+
+
+def test_get_files_singlefile(client, testfiles):
+    torrent = testfiles / "test_single.torrent"
+    torrent_data = bdecode(torrent.read_bytes())
+    infohash = hashlib.sha1(bencode(torrent_data[b"info"])).hexdigest()
+    client.add(torrent_data, testfiles, fast_resume=False)
+
+    verify_torrent_state(
+        client,
+        [
+            {
+                "infohash": infohash,
+                "name": "file_a.txt",
+                "state": TorrentState.ACTIVE,
+                "progress": 100.0,
+            }
+        ],
+    )
+    assert client.get_download_path(infohash) == testfiles
+
+    files = sorted(client.get_files(infohash), key=lambda x: x.path)
+    expected_filenames = sorted(["file_a.txt",])
+    assert len(files) == len(expected_filenames)
+    for f, name in zip(files, expected_filenames):
+        assert f.path == name
+        assert f.progress == 100.0
+        assert f.size == 11
+
+    client.remove(infohash)
+    verify_torrent_state(client, [])
+    assert (testfiles / "file_a.txt").exists()
