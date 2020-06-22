@@ -2,7 +2,13 @@
 Changelog
 ================================
 
-Version Unreleased ()
+Version  ()
+--------------------------------
+
+* Fixed: Deluge 1 bug with download_location
+* Fixed: Transmission bug with progress percentage on files in reverse
+
+Version 1.1.0 (22-06-2020)
 --------------------------------
 
 * Added: get_files to list files in a given torrent
