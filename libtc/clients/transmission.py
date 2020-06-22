@@ -220,11 +220,11 @@ class TransmissionClient(BaseClient):
             name = f["name"]
             if not is_singlefile:
                 name = name.split("/", 1)[1]
-            result.append(
-                TorrentFile(
-                    name, f["length"], (f["length"] / f["bytesCompleted"]) * 100
-                )
-            )
+            if f["length"] > 0:
+                progress = (f["bytesCompleted"] / f["length"]) * 100
+            else:
+                progress = 100.0
+            result.append(TorrentFile(name, f["length"], progress))
 
         return result
 

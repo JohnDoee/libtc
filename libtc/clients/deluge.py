@@ -178,7 +178,8 @@ class DelugeClient(BaseClient):
         try:
             with self.client as client:
                 torrents = client.core.get_torrents_status(
-                    {"id": [infohash]}, ["name", "download_location", "files"]
+                    {"id": [infohash]},
+                    ["name", "download_location", "save_path", "files"],
                 )
         except (DelugeClientException, ConnectionError, OSError):
             raise FailedToExecuteException(
@@ -189,29 +190,33 @@ class DelugeClient(BaseClient):
             raise FailedToExecuteException("Empty result from deluge")
 
         torrent_data = torrents[infohash]
+        download_location = torrent_data.get(
+            "download_location", torrent_data.get("save_path")
+        )
+        if not download_location:
+            raise FailedToExecuteException(
+                "Unable to retrieve a valid download_location"
+            )
         if (
             len(torrent_data["files"]) == 1
             and "/" not in torrent_data["files"][0]["path"]
         ):
-            return Path(torrent_data["download_location"])
+            return Path(download_location)
 
         prefixes = set(f["path"].split("/")[0] for f in torrent_data["files"])
         if len(prefixes) == 1:
-            return Path(torrent_data["download_location"]) / list(prefixes)[0]
+            return Path(download_location) / list(prefixes)[0]
         else:
-            return Path(torrent_data["download_location"])
+            return Path(download_location)
 
     def get_files(self, infohash):
         try:
             with self.client as client:
                 torrents = client.core.get_torrents_status(
-                    {"id": [infohash]},
-                    ["name", "download_location", "files", "file_progress"],
+                    {"id": [infohash]}, ["name", "files", "file_progress"],
                 )
         except (DelugeClientException, ConnectionError, OSError):
-            raise FailedToExecuteException(
-                "Failed to fetch download_location from Deluge"
-            )
+            raise FailedToExecuteException("Failed to fetch files from Deluge")
 
         torrent_data = torrents[infohash]
         files = torrent_data["files"]
