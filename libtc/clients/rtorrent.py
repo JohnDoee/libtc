@@ -16,6 +16,7 @@ from ..scgitransport import SCGITransport
 from ..torrent import TorrentData, TorrentFile, TorrentState
 from ..utils import (
     calculate_minimum_expected_data,
+    get_tracker_domain,
     has_minimum_expected_data,
     map_existing_files,
 )
@@ -95,7 +96,7 @@ class RTorrentClient(BaseClient):
 
             progress = (torrent[5] / torrent[4]) * 100
             if torrent[10]:
-                tracker = ".".join(torrent[10][0][0].split("/")[2].rsplit(".", 2)[1:])
+                tracker = get_tracker_domain(torrent[10][0][0])
             else:
                 tracker = "None"
 

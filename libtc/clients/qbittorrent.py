@@ -9,7 +9,11 @@ from ..baseclient import BaseClient
 from ..bencode import bencode
 from ..exceptions import FailedToExecuteException
 from ..torrent import TorrentData, TorrentFile, TorrentState
-from ..utils import calculate_minimum_expected_data, has_minimum_expected_data
+from ..utils import (
+    calculate_minimum_expected_data,
+    get_tracker_domain,
+    has_minimum_expected_data,
+)
 
 
 class QBittorrentClient(BaseClient):
@@ -70,7 +74,7 @@ class QBittorrentClient(BaseClient):
 
             tracker = ""
             if torrent["tracker"]:
-                tracker = ".".join(torrent["tracker"].split("/")[2].rsplit(".", 2)[1:])
+                tracker = get_tracker_domain(torrent["tracker"])
 
             result.append(
                 TorrentData(

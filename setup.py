@@ -27,6 +27,7 @@ setup(
         "requests~=2.23.0",
         "click~=7.1.2",
         "tabulate~=0.8.7",
+        "publicsuffixlist~=0.7.3",
     ],
     tests_require=["pytest",],
     extras_require={"liltorrent": ["Flask~=1.1.2", "waitress~=1.4.3"]},
