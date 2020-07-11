@@ -13,7 +13,11 @@ from ..baseclient import BaseClient
 from ..bencode import bencode
 from ..exceptions import FailedToExecuteException
 from ..torrent import TorrentData, TorrentFile, TorrentState
-from ..utils import calculate_minimum_expected_data, has_minimum_expected_data
+from ..utils import (
+    calculate_minimum_expected_data,
+    get_tracker_domain,
+    has_minimum_expected_data,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -83,9 +87,7 @@ class TransmissionClient(BaseClient):
                 state = TorrentState.STOPPED
 
             if torrent["trackers"]:
-                tracker = ".".join(
-                    torrent["trackers"][0]["announce"].split("/")[2].rsplit(".", 2)[1:]
-                )
+                tracker = get_tracker_domain(torrent["trackers"][0]["announce"])
             else:
                 tracker = "None"
 

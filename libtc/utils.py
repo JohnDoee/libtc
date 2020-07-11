@@ -1,5 +1,8 @@
 import os
 from pathlib import Path
+from urllib.parse import urlparse
+
+import publicsuffixlist
 
 
 def is_legal_path(path):
@@ -72,3 +75,12 @@ def has_minimum_expected_data(expected_data, actual_data):
     elif expected_data == actual_data == "full":
         return True
     return False
+
+
+def get_tracker_domain(tracker):
+    url = urlparse(tracker)
+    return get_tracker_domain.psl.privatesuffix(url.hostname)
+
+
+# Takes significant time to instantiate (~100ms), so only do it once
+get_tracker_domain.psl = publicsuffixlist.PublicSuffixList()
