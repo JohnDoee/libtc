@@ -5,9 +5,9 @@ Changelog
 Version  ()
 --------------------------------
 
-* Fixed: Ensuring Automatic Torrent Management Mode is disabled when using qBittorrent
-* Fixed: Deluge 1 bug with download_location
-* Fixed: Transmission bug with progress percentage on files in reverse
+* Bugfix: Ensuring Automatic Torrent Management Mode is disabled when using qBittorrent
+* Bugfix: Deluge 1 bug with download_location
+* Bugfix: Transmission bug with progress percentage on files in reverse
 
 Version 1.1.0 (22-06-2020)
 --------------------------------
