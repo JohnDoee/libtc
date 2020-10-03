@@ -67,6 +67,7 @@ def test_path_mapping(client, testfiles):
         ],
     )
     assert client.get_download_path(infohash) == testfiles / from_path / "Some-Release"
+    # TODO: test get_files
 
     client.remove(infohash)
     verify_torrent_state(client, [])

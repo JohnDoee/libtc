@@ -139,6 +139,7 @@ class QBittorrentClient(BaseClient):
         data = {
             "savepath": str(destination_path),
             "skip_checking": (fast_resume and "true" or "false"),
+            "autoTMM": "false",
         }
         if stopped:
             data["paused"] = "true"
