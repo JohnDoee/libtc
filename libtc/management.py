@@ -13,11 +13,11 @@ def move_torrent(
     source_client.test_connection()
     target_client.test_connection()
 
-    source_torrents = source_client.list()
-    source_torrent = [t for t in source_torrents if t.infohash == infohash]
-    if not source_torrent:
+    for source_torrent in source_client.list():
+        if source_torrent.infohash == infohash:
+            break
+    else:
         raise FailedToExecuteException(f"Infohash {infohash} was not found on source")
-    source_torrent = source_torrent[0]
 
     target_torrents = target_client.list()
     if any(t for t in target_torrents if t.infohash == infohash):

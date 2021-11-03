@@ -3,8 +3,9 @@ from .clients import *
 from .exceptions import FailedToExecuteException, LibTorrentClientException
 from .management import move_torrent
 from .torrent import *
+from .utils import TorrentProblems
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 __all__ = [
     "DelugeClient",
@@ -23,4 +24,5 @@ __all__ = [
     "FailedToExecuteException",
     "move_torrent",
     "parse_libtc_url",
+    "TorrentProblems",
 ]

@@ -2,8 +2,10 @@
 Changelog
 ================================
 
-Version  ()
+Version 1.1.1 (03-11-2021)
 --------------------------------
+
+* Change: Transmission supports basic auth
 
 * Bugfix: Ensuring Automatic Torrent Management Mode is disabled when using qBittorrent
 * Bugfix: Deluge 1 bug with download_location

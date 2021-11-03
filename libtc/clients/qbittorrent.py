@@ -199,19 +199,24 @@ class QBittorrentClient(BaseClient):
             return Path(torrent["save_path"])
 
         prefixes = set(f["name"].split("/")[0] for f in torrent_files)
-        if len(prefixes) and list(prefixes)[0] == torrent["name"]:
+        if len(prefixes) == 1 and list(prefixes)[0] == torrent["name"]:
             return Path(torrent["save_path"]) / torrent["name"]
         else:
             return Path(torrent["save_path"])
 
     def get_files(self, infohash):
-        create_subfolder_enabled = self._check_create_subfolder_enabled()
-        files = self.call(
+        torrents = self.call(
+            "get", "/api/v2/torrents/info", params={"hashes": infohash}
+        ).json()
+        torrent_files = self.call(
             "get", "/api/v2/torrents/files", params={"hash": infohash}
         ).json()
+        torrent = torrents[0]
+        prefixes = set(f["name"].split("/")[0] for f in torrent_files)
+        trim_prefix = len(prefixes) == 1 and list(prefixes)[0] == torrent["name"]
         result = []
-        for f in files:
-            if create_subfolder_enabled and "/" in f["name"]:
+        for f in torrent_files:
+            if trim_prefix and "/" in f["name"]:
                 name = f["name"].split("/", 1)[1]
             else:
                 name = f["name"]

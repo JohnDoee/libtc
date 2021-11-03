@@ -27,7 +27,7 @@ def client():
         )
 
         client = TransmissionClient(
-            "http://localhost:9091/transmission/rpc", str(tmp_path)
+            "http://localhost:9091/transmission/rpc", session_path=str(tmp_path)
         )
         for _ in range(30):
             if client.test_connection():

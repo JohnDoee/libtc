@@ -28,16 +28,23 @@ class TransmissionClient(BaseClient):
 
     _session_id = ""
 
-    def __init__(self, url, session_path=None):
+    def __init__(self, url, session_path=None, username=None, password=None):
         self.url = url
         self.session_path = session_path and Path(session_path)
+        self.username = username
+        self.password = password
+
 
     def _call(self, method, **kwargs):
         logger.debug(f"Calling {method!r} args {kwargs!r}")
+        auth = None
+        if self.username and self.password:
+            auth = (self.username, self.password)
         return requests.post(
             self.url,
             data=json.dumps({"method": method, "arguments": kwargs}),
             headers={"X-Transmission-Session-Id": self._session_id},
+            auth=auth,
         )
 
     def call(self, method, **kwargs):
@@ -263,4 +270,4 @@ class TransmissionClient(BaseClient):
         if not port:
             raise FailedToExecuteException("Unable to find port")
 
-        return cls(f"http://{ip}:{port}/transmission/rpc", config_path.parent)
+        return cls(f"http://{ip}:{port}/transmission/rpc", session_path=config_path.parent)
