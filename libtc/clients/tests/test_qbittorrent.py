@@ -18,7 +18,13 @@ Cookies=@Invalid()
 """
 
 
-@pytest.fixture(scope="module", params=[True, False,])
+@pytest.fixture(
+    scope="module",
+    params=[
+        True,
+        False,
+    ],
+)
 def client(request):
     with tempfile.TemporaryDirectory() as tmp_path:
         tmp_path = Path(tmp_path)

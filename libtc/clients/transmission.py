@@ -34,7 +34,6 @@ class TransmissionClient(BaseClient):
         self.username = username
         self.password = password
 
-
     def _call(self, method, **kwargs):
         logger.debug(f"Calling {method!r} args {kwargs!r}")
         auth = None
@@ -270,4 +269,6 @@ class TransmissionClient(BaseClient):
         if not port:
             raise FailedToExecuteException("Unable to find port")
 
-        return cls(f"http://{ip}:{port}/transmission/rpc", session_path=config_path.parent)
+        return cls(
+            f"http://{ip}:{port}/transmission/rpc", session_path=config_path.parent
+        )

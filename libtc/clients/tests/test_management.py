@@ -72,11 +72,13 @@ def test_move_multifile(
     )
 
     verify_torrent_state(
-        source_client, [],
+        source_client,
+        [],
     )
     target_client.remove(infohash)
     verify_torrent_state(
-        target_client, [],
+        target_client,
+        [],
     )
 
 
@@ -139,11 +141,13 @@ def test_move_singlefile(
     )
 
     verify_torrent_state(
-        source_client, [],
+        source_client,
+        [],
     )
     target_client.remove(infohash)
     verify_torrent_state(
-        target_client, [],
+        target_client,
+        [],
     )
 
 
@@ -190,21 +194,35 @@ def test_move_multifile_no_add_name_to_folder(
 
     verify_torrent_state(
         source_client,
-        [{"infohash": infohash, "state": TorrentState.ACTIVE, "progress": 100.0,}],
+        [
+            {
+                "infohash": infohash,
+                "state": TorrentState.ACTIVE,
+                "progress": 100.0,
+            }
+        ],
     )
 
     move_torrent(infohash, source_client, target_client)
     verify_torrent_state(
         target_client,
-        [{"infohash": infohash, "state": TorrentState.ACTIVE, "progress": 100.0,}],
+        [
+            {
+                "infohash": infohash,
+                "state": TorrentState.ACTIVE,
+                "progress": 100.0,
+            }
+        ],
     )
 
     verify_torrent_state(
-        source_client, [],
+        source_client,
+        [],
     )
     target_client.remove(infohash)
     verify_torrent_state(
-        target_client, [],
+        target_client,
+        [],
     )
 
 
@@ -295,9 +313,11 @@ def test_move_multifile_stopped(
     )
 
     verify_torrent_state(
-        source_client, [],
+        source_client,
+        [],
     )
     target_client.remove(infohash)
     verify_torrent_state(
-        target_client, [],
+        target_client,
+        [],
     )

@@ -27,7 +27,13 @@ def test_list(client):
 
 
 def verify_torrent_state(client, states, do_not_fail=False):
-    hard_states = set(["infohash", "name", "data_location",])
+    hard_states = set(
+        [
+            "infohash",
+            "name",
+            "data_location",
+        ]
+    )
     for _ in range(50):
         found_invalid_state = False
         time.sleep(0.1)
@@ -173,7 +179,14 @@ def test_add_torrent_singlefile_no_data(client, testfiles, tmp_path):
     client.add(torrent_data, tmp_path, fast_resume=False, add_name_to_folder=False)
 
     verify_torrent_state(
-        client, [{"infohash": infohash, "state": TorrentState.ACTIVE, "progress": 0.0,}]
+        client,
+        [
+            {
+                "infohash": infohash,
+                "state": TorrentState.ACTIVE,
+                "progress": 0.0,
+            }
+        ],
     )
     assert client.get_download_path(infohash) == Path(tmp_path)
 
@@ -188,7 +201,14 @@ def test_retrieve_torrent(client, testfiles):
     infohash = hashlib.sha1(bencode(torrent_data[b"info"])).hexdigest()
     client.add(torrent_data, testfiles, fast_resume=False)
 
-    verify_torrent_state(client, [{"infohash": infohash,}])
+    verify_torrent_state(
+        client,
+        [
+            {
+                "infohash": infohash,
+            }
+        ],
+    )
     retrieved_torrent_data = bdecode(client.retrieve_torrentfile(infohash))
     assert (
         hashlib.sha1(bencode(retrieved_torrent_data[b"info"])).hexdigest() == infohash
@@ -205,18 +225,36 @@ def test_add_torrent_multifile_stopped(client, testfiles):
 
     verify_torrent_state(
         client,
-        [{"infohash": infohash, "name": "Some-Release", "progress": 100.0,}],
+        [
+            {
+                "infohash": infohash,
+                "name": "Some-Release",
+                "progress": 100.0,
+            }
+        ],
         do_not_fail=True,
     )
 
     verify_torrent_state(
-        client, [{"infohash": infohash, "state": TorrentState.STOPPED,}],
+        client,
+        [
+            {
+                "infohash": infohash,
+                "state": TorrentState.STOPPED,
+            }
+        ],
     )
 
     client.start(infohash)
 
     verify_torrent_state(
-        client, [{"infohash": infohash, "state": TorrentState.ACTIVE,}],
+        client,
+        [
+            {
+                "infohash": infohash,
+                "state": TorrentState.ACTIVE,
+            }
+        ],
     )
 
     assert client.get_download_path(infohash) == testfiles / "Some-Release"
@@ -346,7 +384,11 @@ def test_get_files_singlefile(client, testfiles):
     assert client.get_download_path(infohash) == testfiles
 
     files = sorted(client.get_files(infohash), key=lambda x: x.path)
-    expected_filenames = sorted(["file_a.txt",])
+    expected_filenames = sorted(
+        [
+            "file_a.txt",
+        ]
+    )
     assert len(files) == len(expected_filenames)
     for f, name in zip(files, expected_filenames):
         assert f.path == name

@@ -3,8 +3,16 @@ from collections import namedtuple
 from ...baseclient import BaseClient
 from ...exceptions import FailedToExecuteException
 
-
-TestTorrent = namedtuple("TestTorrent", ["torrent_data", "torrent_files", "download_path", "torrent_file_data", "is_active"])
+TestTorrent = namedtuple(
+    "TestTorrent",
+    [
+        "torrent_data",
+        "torrent_files",
+        "download_path",
+        "torrent_file_data",
+        "is_active",
+    ],
+)
 
 
 class TestClient(BaseClient):
@@ -44,14 +52,19 @@ class TestClient(BaseClient):
         minimum_expected_data="none",
         stopped=False,
     ):
-        self._action_queue.append(("add", {
-            "torrent": torrent,
-            "destination_path": destination_path,
-            "fast_resume": fast_resume,
-            "add_name_to_folder": add_name_to_folder,
-            "minimum_expected_data": minimum_expected_data,
-            "stopped": stopped,
-        }))
+        self._action_queue.append(
+            (
+                "add",
+                {
+                    "torrent": torrent,
+                    "destination_path": destination_path,
+                    "fast_resume": fast_resume,
+                    "add_name_to_folder": add_name_to_folder,
+                    "minimum_expected_data": minimum_expected_data,
+                    "stopped": stopped,
+                },
+            )
+        )
 
     def remove(self, infohash):
         if infohash not in self._torrents:
@@ -79,5 +92,14 @@ class TestClient(BaseClient):
     def auto_configure(cls):
         raise FailedToExecuteException("Cannot autoconfigure")
 
-    def _inject_torrent(self, torrent_data, torrent_files, download_path, torrent_file_data=None, is_active=True):
-        self._torrents[torrent_data.infohash] = TestTorrent(torrent_data, torrent_files, download_path, torrent_file_data, is_active)
+    def _inject_torrent(
+        self,
+        torrent_data,
+        torrent_files,
+        download_path,
+        torrent_file_data=None,
+        is_active=True,
+    ):
+        self._torrents[torrent_data.infohash] = TestTorrent(
+            torrent_data, torrent_files, download_path, torrent_file_data, is_active
+        )

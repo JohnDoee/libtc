@@ -220,7 +220,13 @@ class QBittorrentClient(BaseClient):
                 name = f["name"].split("/", 1)[1]
             else:
                 name = f["name"]
-            result.append(TorrentFile(name, f["size"], f["progress"] * 100,))
+            result.append(
+                TorrentFile(
+                    name,
+                    f["size"],
+                    f["progress"] * 100,
+                )
+            )
         return result
 
     def serialize_configuration(self):

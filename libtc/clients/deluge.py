@@ -213,7 +213,8 @@ class DelugeClient(BaseClient):
         try:
             with self.client as client:
                 torrents = client.core.get_torrents_status(
-                    {"id": [infohash]}, ["name", "files", "file_progress"],
+                    {"id": [infohash]},
+                    ["name", "files", "file_progress"],
                 )
         except (DelugeClientException, ConnectionError, OSError):
             raise FailedToExecuteException("Failed to fetch files from Deluge")

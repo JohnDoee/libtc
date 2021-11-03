@@ -87,8 +87,43 @@ get_tracker_domain.psl = publicsuffixlist.PublicSuffixList()
 
 
 class TorrentProblems:
-    INVALID_PATH_SEGMENT = [b"", b".", b"..",  b"/", b"\\"]
-    BAD_CHARACTER_SET = [b"\x00", b"<", b">", b":", b"\\", b'"', b"/", b"\\", b"|", b"?", b"*"]
-    WINDOWS_RESERVED_NAMES = [b'con', b'prn', b'aux', b'nul', b'com1', b'com2', b'com3', b'com4', b'com5', b'com6', b'com7', b'com8', b'com9', b'lpt1', b'lpt2', b'lpt3', b'lpt4', b'lpt5', b'lpt6', b'lpt7', b'lpt8', b'lpt9']
+    INVALID_PATH_SEGMENT = [b"", b".", b"..", b"/", b"\\"]
+    BAD_CHARACTER_SET = [
+        b"\x00",
+        b"<",
+        b">",
+        b":",
+        b"\\",
+        b'"',
+        b"/",
+        b"\\",
+        b"|",
+        b"?",
+        b"*",
+    ]
+    WINDOWS_RESERVED_NAMES = [
+        b"con",
+        b"prn",
+        b"aux",
+        b"nul",
+        b"com1",
+        b"com2",
+        b"com3",
+        b"com4",
+        b"com5",
+        b"com6",
+        b"com7",
+        b"com8",
+        b"com9",
+        b"lpt1",
+        b"lpt2",
+        b"lpt3",
+        b"lpt4",
+        b"lpt5",
+        b"lpt6",
+        b"lpt7",
+        b"lpt8",
+        b"lpt9",
+    ]
     STRIPPED_PREFIX_POSTFIX = [b" ", b"."]
     MAX_PATH_LENGTH = 260
