@@ -27,4 +27,4 @@ jobs:
         run: docker pull johndoee/test-libtc
 
       - name: Run tests in image
-        run: docker run --rm -ti -v ${GITHUB_WORKSPACE}/libtc:/libtc johndoee/test-libtc pytest "/libtc/"
+        run: docker run --rm -v ${GITHUB_WORKSPACE}/libtc:/libtc johndoee/test-libtc pytest "/libtc/"
