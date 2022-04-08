@@ -108,7 +108,9 @@ def move_files(source_path, target_path, files, preserve_parent_folder=False):
             source_file_parent = source_file.parent
             target_file_parent = target_file.parent
 
-            while not (target_file_parent.parent.exists() and not target_file_parent.exists()):
+            while not (
+                target_file_parent.parent.exists() and not target_file_parent.exists()
+            ):
                 source_file_parent = source_file_parent.parent
                 target_file_parent = target_file_parent.parent
 
@@ -118,7 +120,10 @@ def move_files(source_path, target_path, files, preserve_parent_folder=False):
             shutil.copystat(source_file_parent, target_file_parent)
 
         source_parent_folder = source_file.parent
-        while source_path in source_parent_folder.parents and source_parent_folder not in potential_removal_folders:
+        while (
+            source_path in source_parent_folder.parents
+            and source_parent_folder not in potential_removal_folders
+        ):
             potential_removal_folders.add(source_parent_folder)
             source_parent_folder = source_parent_folder.parent
 
@@ -131,6 +136,7 @@ def move_files(source_path, target_path, files, preserve_parent_folder=False):
     for folder in potential_removal_folders:
         if not list(folder.iterdir()):
             folder.rmdir()
+
 
 class TorrentProblems:
     INVALID_PATH_SEGMENT = [b"", b".", b"..", b"/", b"\\"]
@@ -173,4 +179,4 @@ class TorrentProblems:
     ]
     STRIPPED_PREFIX_POSTFIX = [b" ", b"."]
     MAX_PATH_LENGTH = 260
-    EMOJIS = [] # TODO: add emojis that e.g. transmission chokes on
+    EMOJIS = []  # TODO: add emojis that e.g. transmission chokes on

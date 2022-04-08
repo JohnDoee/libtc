@@ -135,10 +135,7 @@ def move_torrent():
     client = get_client()
     infohash = request.args.get("infohash")
     destination_path = Path(request.args.get("destination_path"))
-    client.move_torrent(
-        infohash,
-        destination_path
-    )
+    client.move_torrent(infohash, destination_path)
     return jsonify({})
 
 

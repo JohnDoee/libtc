@@ -490,4 +490,3 @@ def test_move_torrent_multifile(client, testfiles, tempdir):
 
     client.remove(infohash)
     verify_torrent_state(client, [])
-

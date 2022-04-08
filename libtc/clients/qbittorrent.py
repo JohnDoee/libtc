@@ -220,9 +220,15 @@ class QBittorrentClient(BaseClient):
         move_files(current_download_path, destination_path, files)
         if contains_folder_name:
             current_download_path = current_download_path.parent
-        self.call("post", "/api/v2/torrents/setLocation", data={"hashes": infohash, "location": str(destination_path)})
+        self.call(
+            "post",
+            "/api/v2/torrents/setLocation",
+            data={"hashes": infohash, "location": str(destination_path)},
+        )
         for _ in range(20):
-            import time; time.sleep(0.3)
+            import time
+
+            time.sleep(0.3)
             print(self._get_download_path(infohash))
         self.start(infohash)
 

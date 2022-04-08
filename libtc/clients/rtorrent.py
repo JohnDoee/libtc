@@ -259,9 +259,18 @@ class RTorrentClient(BaseClient):
         self.stop(infohash)
         self.proxy.d.directory.set(infohash, str(destination_path))
         if is_multi_file:
-            move_files(current_download_path, destination_path / current_download_path.name, files)
+            move_files(
+                current_download_path,
+                destination_path / current_download_path.name,
+                files,
+            )
         else:
-            move_files(current_download_path, destination_path, files, preserve_parent_folder=True)
+            move_files(
+                current_download_path,
+                destination_path,
+                files,
+                preserve_parent_folder=True,
+            )
 
         self.start(infohash)
 

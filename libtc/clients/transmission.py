@@ -131,14 +131,21 @@ class TransmissionClient(BaseClient):
         if len(torrent["files"]) == 1 and "/" not in torrent["files"][0]["name"]:
             return Path(torrent["downloadDir"])
         else:
-            return Path(torrent["downloadDir"]) / torrent["files"][0]["name"].split("/")[0]
+            return (
+                Path(torrent["downloadDir"]) / torrent["files"][0]["name"].split("/")[0]
+            )
 
     def move_torrent(self, infohash, destination_path):
         call_result = self.call("torrent-get", ids=[infohash], fields=["name"])
         if not call_result["torrents"]:
             raise FailedToExecuteException("Torrent not found")
 
-        self.call("torrent-set-location", ids=[infohash], location=str(destination_path.resolve()), move=True)
+        self.call(
+            "torrent-set-location",
+            ids=[infohash],
+            location=str(destination_path.resolve()),
+            move=True,
+        )
 
     def list(self):
         return self._fetch_list_result(False)
