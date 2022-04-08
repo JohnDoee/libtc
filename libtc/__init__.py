@@ -5,7 +5,7 @@ from .management import move_torrent
 from .torrent import *
 from .utils import TorrentProblems
 
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 __all__ = [
     "DelugeClient",
