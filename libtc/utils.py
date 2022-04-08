@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -18,7 +19,7 @@ def map_existing_files(torrent, path, add_name_to_folder=True):
     files = []
     if b"files" in torrent[b"info"]:
         for f in torrent[b"info"][b"files"]:
-            file_path = Path(os.sep.join(p.decode() for p in f[b"path"]))
+            file_path = Path(os.sep.join(os.fsdecode(p) for p in f[b"path"]))
             if add_name_to_folder:
                 files.append((path / name / file_path, file_path, f[b"length"]))
             else:
@@ -86,6 +87,51 @@ def get_tracker_domain(tracker):
 get_tracker_domain.psl = publicsuffixlist.PublicSuffixList()
 
 
+def move_files(source_path, target_path, files, preserve_parent_folder=False):
+    """Move a file mapping from source_path to target_path and preserve permission et.al."""
+    source_path = Path(source_path)
+    target_path = Path(target_path)
+
+    if not target_path.exists():
+        target_path.mkdir()
+        shutil.copystat(source_path, target_path)
+
+    potential_removal_folders = set()
+    if not preserve_parent_folder:
+        potential_removal_folders.add(source_path)
+
+    for f in files:
+        source_file = source_path / f.path
+        target_file = target_path / f.path
+
+        while not target_file.parent.exists():
+            source_file_parent = source_file.parent
+            target_file_parent = target_file.parent
+
+            while not (target_file_parent.parent.exists() and not target_file_parent.exists()):
+                source_file_parent = source_file_parent.parent
+                target_file_parent = target_file_parent.parent
+
+            if target_path not in target_file_parent.resolve().parents:
+                raise Exception()
+            target_file_parent.mkdir()
+            shutil.copystat(source_file_parent, target_file_parent)
+
+        source_parent_folder = source_file.parent
+        while source_path in source_parent_folder.parents and source_parent_folder not in potential_removal_folders:
+            potential_removal_folders.add(source_parent_folder)
+            source_parent_folder = source_parent_folder.parent
+
+        if target_path not in target_file.resolve().parents:
+            raise Exception()
+
+        source_file.rename(target_file)
+
+    potential_removal_folders = sorted(potential_removal_folders, reverse=True)
+    for folder in potential_removal_folders:
+        if not list(folder.iterdir()):
+            folder.rmdir()
+
 class TorrentProblems:
     INVALID_PATH_SEGMENT = [b"", b".", b"..", b"/", b"\\"]
     BAD_CHARACTER_SET = [
@@ -127,3 +173,4 @@ class TorrentProblems:
     ]
     STRIPPED_PREFIX_POSTFIX = [b" ", b"."]
     MAX_PATH_LENGTH = 260
+    EMOJIS = [] # TODO: add emojis that e.g. transmission chokes on

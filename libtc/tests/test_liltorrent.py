@@ -109,6 +109,9 @@ class DummyClient(BaseClient):
     def get_files(self, infohash):
         return TORRENT_FILE_LIST
 
+    def move_torrent(self, infohash, destination_path):
+        self._call_log.append(("move_torrent", infohash, destination_path))
+
     def serialize_configuration(self):
         raise FailedToExecuteException("Not supported")
 

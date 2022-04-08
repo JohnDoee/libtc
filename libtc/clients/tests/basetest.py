@@ -18,6 +18,12 @@ def testfiles():
         yield tmp_path / "testfiles"
 
 
+@pytest.fixture
+def tempdir():
+    with tempfile.TemporaryDirectory() as tmp_path:
+        yield Path(tmp_path)
+
+
 def test_test_connection(client):
     assert client.test_connection()
 
@@ -398,3 +404,90 @@ def test_get_files_singlefile(client, testfiles):
     client.remove(infohash)
     verify_torrent_state(client, [])
     assert (testfiles / "file_a.txt").exists()
+
+
+def test_move_torrent_singlefile(client, testfiles, tempdir):
+    torrent = testfiles / "test_single.torrent"
+    torrent_data = bdecode(torrent.read_bytes())
+    infohash = hashlib.sha1(bencode(torrent_data[b"info"])).hexdigest()
+    client.add(torrent_data, testfiles, fast_resume=False)
+
+    verify_torrent_state(
+        client,
+        [
+            {
+                "infohash": infohash,
+                "name": "file_a.txt",
+                "state": TorrentState.ACTIVE,
+                "progress": 100.0,
+            }
+        ],
+    )
+    assert client.get_download_path(infohash) == testfiles
+    client.move_torrent(infohash, tempdir)
+    verify_torrent_state(
+        client,
+        [
+            {
+                "infohash": infohash,
+                "name": "file_a.txt",
+                "state": TorrentState.ACTIVE,
+                "progress": 100.0,
+            }
+        ],
+    )
+    assert client.get_download_path(infohash) == tempdir
+
+    client.remove(infohash)
+    verify_torrent_state(client, [])
+
+
+def test_move_torrent_multifile(client, testfiles, tempdir):
+    torrent = testfiles / "Some-Release.torrent"
+    torrent_data = bdecode(torrent.read_bytes())
+    infohash = hashlib.sha1(bencode(torrent_data[b"info"])).hexdigest()
+    client.add(torrent_data, testfiles, fast_resume=False)
+    remove_folder = testfiles / "Some-Release" / "Sample"
+    preserve_file = testfiles / "Some-Release" / "do-not-move.txt"
+    preserve_file.write_text("keep this file")
+    preserve_folder = testfiles / "Some-Release" / "do-not-remove"
+    preserve_folder.mkdir()
+
+    verify_torrent_state(
+        client,
+        [
+            {
+                "infohash": infohash,
+                "name": "Some-Release",
+                "state": TorrentState.ACTIVE,
+                "progress": 100.0,
+            }
+        ],
+    )
+    assert client.get_download_path(infohash) == testfiles / "Some-Release"
+    assert preserve_file.exists()
+    assert remove_folder.exists()
+    # assert preserve_folder.exists()
+
+    client.move_torrent(infohash, tempdir)
+    verify_torrent_state(
+        client,
+        [
+            {
+                "infohash": infohash,
+                "name": "Some-Release",
+                "state": TorrentState.ACTIVE,
+                "progress": 100.0,
+            }
+        ],
+    )
+    assert client.get_download_path(infohash) == tempdir / "Some-Release"
+    assert not (tempdir / "Some-Release" / "do-not-move.txt").exists()
+    assert not (tempdir / "Some-Release" / "do-not-move").exists()
+    assert preserve_file.exists()
+    assert not remove_folder.exists()
+    # assert preserve_folder.exists() # Broken with transmission
+
+    client.remove(infohash)
+    verify_torrent_state(client, [])
+

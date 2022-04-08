@@ -33,13 +33,14 @@ class TransmissionClient(BaseClient):
         self.session_path = session_path and Path(session_path)
         self.username = username
         self.password = password
+        self.session = requests.Session()
 
     def _call(self, method, **kwargs):
         logger.debug(f"Calling {method!r} args {kwargs!r}")
         auth = None
         if self.username and self.password:
             auth = (self.username, self.password)
-        return requests.post(
+        return self.session.post(
             self.url,
             data=json.dumps({"method": method, "arguments": kwargs}),
             headers={"X-Transmission-Session-Id": self._session_id},
@@ -130,7 +131,14 @@ class TransmissionClient(BaseClient):
         if len(torrent["files"]) == 1 and "/" not in torrent["files"][0]["name"]:
             return Path(torrent["downloadDir"])
         else:
-            return Path(torrent["downloadDir"]) / torrent["name"]
+            return Path(torrent["downloadDir"]) / torrent["files"][0]["name"].split("/")[0]
+
+    def move_torrent(self, infohash, destination_path):
+        call_result = self.call("torrent-get", ids=[infohash], fields=["name"])
+        if not call_result["torrents"]:
+            raise FailedToExecuteException("Torrent not found")
+
+        self.call("torrent-set-location", ids=[infohash], location=str(destination_path.resolve()), move=True)
 
     def list(self):
         return self._fetch_list_result(False)

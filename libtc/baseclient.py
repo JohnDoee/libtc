@@ -86,6 +86,12 @@ class BaseClient(metaclass=ABCMeta):
         """
 
     @abstractmethod
+    def move_torrent(infohash, destination_path):
+        """
+        Move torrent to destination_path.
+        """
+
+    @abstractmethod
     def get_files(infohash):
         """
         Returns a list of `TorrentFile` in a given infohash.

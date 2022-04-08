@@ -114,6 +114,12 @@ class LilTorrentClient(BaseClient):
         ).json()
         return rewrite_path(Path(path), self.reverse_path_mapping)
 
+    def move_torrent(self, infohash, destination_path):
+        return self._call(
+            "post", "move_torrent",
+            params={"infohash": infohash, "destination_path": str(rewrite_path(Path(destination_path), self.reverse_path_mapping))}
+        ).json()
+
     def get_files(self, infohash):
         return [
             TorrentFile.unserialize(torrent)

@@ -2,6 +2,13 @@
 Changelog
 ================================
 
+Version 1.2.0 (08-04-2022)
+--------------------------------
+
+* Added: move_torrent support
+
+* Change: Session usage with transmission to reuse conneciton
+
 Version 1.1.1 (03-11-2021)
 --------------------------------
 

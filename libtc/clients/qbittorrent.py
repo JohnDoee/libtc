@@ -13,6 +13,7 @@ from ..utils import (
     calculate_minimum_expected_data,
     get_tracker_domain,
     has_minimum_expected_data,
+    move_files,
 )
 
 
@@ -184,6 +185,9 @@ class QBittorrentClient(BaseClient):
         return torrent_path.read_bytes()
 
     def get_download_path(self, infohash):
+        return self._get_download_path(infohash)[0]
+
+    def _get_download_path(self, infohash):
         torrents = self.call(
             "get", "/api/v2/torrents/info", params={"hashes": infohash}
         ).json()
@@ -196,13 +200,31 @@ class QBittorrentClient(BaseClient):
         torrent = torrents[0]
 
         if len(torrent_files) == 1 and torrent_files[0]["name"] == torrent["name"]:
-            return Path(torrent["save_path"])
+            return Path(torrent["save_path"]), False
 
         prefixes = set(f["name"].split("/")[0] for f in torrent_files)
         if len(prefixes) == 1 and list(prefixes)[0] == torrent["name"]:
-            return Path(torrent["save_path"]) / torrent["name"]
+            return Path(torrent["save_path"]) / torrent["name"], True
+        elif len(prefixes) > 1:
+            return Path(torrent["save_path"]), True
         else:
-            return Path(torrent["save_path"])
+            return Path(torrent["save_path"]), False
+
+    def move_torrent(self, infohash, destination_path):
+        self.stop(infohash)
+        current_download_path, contains_folder_name = self._get_download_path(infohash)
+        files = self.get_files(infohash)
+        if contains_folder_name and not self._check_create_subfolder_enabled():
+            destination_path = destination_path / current_download_path.name
+
+        move_files(current_download_path, destination_path, files)
+        if contains_folder_name:
+            current_download_path = current_download_path.parent
+        self.call("post", "/api/v2/torrents/setLocation", data={"hashes": infohash, "location": str(destination_path)})
+        for _ in range(20):
+            import time; time.sleep(0.3)
+            print(self._get_download_path(infohash))
+        self.start(infohash)
 
     def get_files(self, infohash):
         torrents = self.call(

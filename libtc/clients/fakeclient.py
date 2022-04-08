@@ -93,6 +93,9 @@ class FakeClient(BaseClient):
     def get_download_path(self, infohash):
         raise FailedToExecuteException("No data exist")
 
+    def move_torrent(self, infohash, destination_path):
+        raise FailedToExecuteException("Failed to set path")
+
     def serialize_configuration(self):
         raise FailedToExecuteException("Unserializable")
 

@@ -209,6 +209,13 @@ class DelugeClient(BaseClient):
         else:
             return Path(download_location)
 
+    def move_torrent(self, infohash, destination_path):
+        try:
+            with self.client as client:
+                client.core.move_storage([infohash], str(destination_path.resolve()))
+        except (DelugeClientException, ConnectionError, OSError):
+            raise FailedToExecuteException("Failed to move torrent")
+
     def get_files(self, infohash):
         try:
             with self.client as client:

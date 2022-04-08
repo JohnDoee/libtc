@@ -19,6 +19,7 @@ from ..utils import (
     get_tracker_domain,
     has_minimum_expected_data,
     map_existing_files,
+    move_files,
 )
 
 logger = logging.getLogger(__name__)
@@ -249,6 +250,20 @@ class RTorrentClient(BaseClient):
             return Path(self.proxy.d.directory(infohash))
         except (XMLRPCError, ConnectionError, OSError, ExpatError):
             raise FailedToExecuteException("Failed to retrieve download path")
+
+    def move_torrent(self, infohash, destination_path):
+        files = self.get_files(infohash)
+        current_download_path = self.get_download_path(infohash)
+        is_multi_file = self.proxy.d.is_multi_file(infohash)
+
+        self.stop(infohash)
+        self.proxy.d.directory.set(infohash, str(destination_path))
+        if is_multi_file:
+            move_files(current_download_path, destination_path / current_download_path.name, files)
+        else:
+            move_files(current_download_path, destination_path, files, preserve_parent_folder=True)
+
+        self.start(infohash)
 
     def get_files(self, infohash):
         result = []

@@ -129,6 +129,19 @@ def get_download_path():
     return jsonify(str(client.get_download_path(request.args.get("infohash"))))
 
 
+@app.route("/move_torrent", methods=["POST"])
+@require_apikey
+def move_torrent():
+    client = get_client()
+    infohash = request.args.get("infohash")
+    destination_path = Path(request.args.get("destination_path"))
+    client.move_torrent(
+        infohash,
+        destination_path
+    )
+    return jsonify({})
+
+
 @app.route("/get_files")
 @require_apikey
 def get_files():
