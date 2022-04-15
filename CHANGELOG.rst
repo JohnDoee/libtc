@@ -2,6 +2,13 @@
 Changelog
 ================================
 
+Version 1.2.1 (08-04-2022)
+--------------------------------
+
+* Change: Bumped click version
+
+* Bugfix: Added missing implementations for the fake client
+
 Version 1.2.0 (08-04-2022)
 --------------------------------
 

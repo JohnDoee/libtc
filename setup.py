@@ -25,7 +25,7 @@ setup(
         "deluge-client~=1.9.0",
         "pytz~=2020.1",
         "requests~=2.23.0",
-        "click~=7.1.2",
+        "click>=8.0,<9.0",
         "tabulate~=0.8.7",
         "publicsuffixlist~=0.7.3",
     ],
