@@ -81,6 +81,17 @@ class TestClient(BaseClient):
             raise FailedToExecuteException("Torrent does not exist")
         return self._torrents[infohash].download_path
 
+    def move_torrent(self, infohash, destination_path):
+        self._action_queue.append(
+            (
+                "move_torrent",
+                {
+                    "infohash": infohash,
+                    "destination_path": destination_path,
+                },
+            )
+        )
+
     def get_files(self, infohash):
         if infohash not in self._torrents:
             raise FailedToExecuteException("Torrent does not exist")

@@ -2,6 +2,13 @@
 Changelog
 ================================
 
+Version 1.2.2 (22-05-2022)
+--------------------------------
+
+* Added: Parse function from config to map of clients
+
+* Bugfix: Added missing implementations for the test client
+
 Version 1.2.1 (08-04-2022)
 --------------------------------
 
