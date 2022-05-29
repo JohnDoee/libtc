@@ -23,8 +23,8 @@ setup(
     packages=find_packages(),
     install_requires=[
         "deluge-client~=1.9.0",
-        "pytz~=2020.1",
-        "requests~=2.23.0",
+        "pytz", # pinning versions here causes problems
+        "requests", # pinning versions here causes problems
         "click>=8.0,<9.0",
         "tabulate~=0.8.7",
         "publicsuffixlist~=0.7.3",
