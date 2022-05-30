@@ -212,6 +212,23 @@ Each key must be unique, e.g. you cannot have two clients with the same key, e.g
     display_name = "Deluge url"
     client_url = "deluge://localclient:da39a3ee5e6b4b0d3255bfef95601890afd80709@127.0.0.1:58846?session_path=%7E/.config/deluge"
 
+    [clients.rtorrent-with-label]
+    display_name = "rtorrent"
+    client_type = "rtorrent"
+    url = "scgi://127.0.0.1:5000"
+    session_path = "~/.rtorrent/"
+    label = "alabel"
+
+    [clients.deluge-with-label]
+    display_name = "A Deluge"
+    client_type = "deluge"
+    host = "127.0.0.1"
+    port = 58846
+    username = "localclient"
+    password = "secretpassword"
+    session_path = "~/.config/deluge/"
+    label = "alabel"
+
 License
 ---------------------------------
 
