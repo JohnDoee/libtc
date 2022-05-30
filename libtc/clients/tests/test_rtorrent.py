@@ -115,8 +115,14 @@ log.add_output = "info", "log"
 ### END of rtorrent.rc ###"""
 
 
-@pytest.fixture(scope="module")
-def client():
+@pytest.fixture(
+    scope="module",
+    params=[
+        True,
+        False,
+    ],
+)
+def client(request):
     with tempfile.TemporaryDirectory() as tmp_path:
         tmp_path = Path(tmp_path)
         config_content = RTORRENT_CONFIG.replace("%%TMPDIR%%", str(tmp_path))
@@ -128,6 +134,8 @@ def client():
         client = RTorrentClient(
             f"scgi://{tmp_path!s}/.session/rpc.socket", tmp_path / ".session"
         )
+        if request.param:
+            client.label = "testlabel"
         for _ in range(30):
             if client.test_connection():
                 break

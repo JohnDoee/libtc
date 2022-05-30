@@ -10,9 +10,14 @@ from libtc import DelugeClient
 
 from .basetest import *
 
-
-@pytest.fixture(scope="module")
-def client():
+@pytest.fixture(
+    scope="module",
+    params=[
+        True,
+        False,
+    ],
+)
+def client(request):
     with tempfile.TemporaryDirectory() as tmp_path:
         tmp_path = Path(tmp_path)
         auth_path = tmp_path / "auth"
@@ -29,6 +34,10 @@ def client():
             username, password = f.read().split("\n")[0].split(":")[:2]
 
         client = DelugeClient("127.0.0.1", 58846, username, password, tmp_path)
+        if request.param:
+            with client.client as c:
+                c.core.enable_plugin("Label")
+            client.label = "testlabel"
         for _ in range(30):
             if client.test_connection():
                 break

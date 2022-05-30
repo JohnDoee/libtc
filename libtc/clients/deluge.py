@@ -36,12 +36,13 @@ class DelugeClient(BaseClient):
         "label",
     ]
 
-    def __init__(self, host, port, username, password, session_path=None):
+    def __init__(self, host, port, username, password, session_path=None, label=None):
         self.host = host
         self.port = port
         self.username = username
         self.password = password
         self.session_path = session_path and Path(session_path)
+        self.label = label
 
     @property
     def client(self):
@@ -150,6 +151,10 @@ class DelugeClient(BaseClient):
                 result = client.core.add_torrent_file(
                     "torrent.torrent", encoded_torrent, options
                 )
+                if self.label:
+                    if self.label not in client.label.get_labels():
+                        client.label.add(self.label)
+                    client.label.set_torrent(infohash, self.label)
         except (DelugeClientException, ConnectionError, OSError):
             raise FailedToExecuteException()
 

@@ -2,7 +2,7 @@ import logging
 import re
 from datetime import datetime
 from pathlib import Path
-from urllib.parse import urlencode, urlsplit
+from urllib.parse import urlencode, urlsplit, quote
 from xml.parsers.expat import ExpatError
 from xmlrpc.client import Error as XMLRPCError
 from xmlrpc.client import ServerProxy
@@ -60,11 +60,12 @@ class RTorrentClient(BaseClient):
     display_name = "rtorrent"
     _methods = None
 
-    def __init__(self, url, session_path=None, torrent_temp_path=None):
+    def __init__(self, url, session_path=None, torrent_temp_path=None, label=None):
         self.url = url
         self.proxy = create_proxy(url)
         self.session_path = session_path and Path(session_path)
         self.torrent_temp_path = torrent_temp_path and Path(torrent_temp_path)
+        self.label = label
 
     def _fetch_list_result(self, view):
         result = []
@@ -222,6 +223,8 @@ class RTorrentClient(BaseClient):
             cmd.append(f'd.directory.set="{destination_path!s}"')
         else:
             cmd.append(f'd.directory_base.set="{destination_path!s}"')
+        if self.label:
+            cmd.append(f'd.custom1.set={quote(self.label)}')
         logger.info(f"Sending to rtorrent: {cmd!r}")
         try:  # TODO: use torrent_temp_path if payload is too big
             if stopped:
@@ -305,6 +308,9 @@ class RTorrentClient(BaseClient):
         query = {}
         if self.session_path:
             query["session_path"] = str(self.session_path)
+
+        if self.label:
+            query["label"] = self.label
 
         if query:
             url += f"?{urlencode(query)}"
