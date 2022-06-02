@@ -113,11 +113,6 @@ class QBittorrentClient(BaseClient):
         except FailedToExecuteException:
             return False
 
-    def _check_create_subfolder_enabled(self):
-        return self.call("get", "/api/v2/app/preferences").json()[
-            "create_subfolder_enabled"
-        ]
-
     def add(
         self,
         torrent,
@@ -134,40 +129,22 @@ class QBittorrentClient(BaseClient):
             raise FailedToExecuteException(
                 f"Minimum expected data not reached, wanted {minimum_expected_data} actual {current_expected_data}"
             )
-        create_subfolder_enabled = self._check_create_subfolder_enabled()
-        changed_create_subfolder_enabled = False
         encoded_torrent = bencode(torrent)
         data = {
             "savepath": str(destination_path),
             "skip_checking": (fast_resume and "true" or "false"),
             "autoTMM": "false",
+            "root_folder": add_name_to_folder,
         }
         if stopped:
             data["paused"] = "true"
 
-        name = torrent[b"info"][b"name"].decode()
-        if b"files" in torrent[b"info"]:
-            if create_subfolder_enabled and not add_name_to_folder:
-                self.call(
-                    "post",
-                    "/api/v2/app/setPreferences",
-                    data={"json": json.dumps({"create_subfolder_enabled": False})},
-                )
-                changed_create_subfolder_enabled = True
-            elif not create_subfolder_enabled and add_name_to_folder:
-                data["savepath"] = destination_path / name
         self.call(
             "post",
             "/api/v2/torrents/add",
             files={"torrents": encoded_torrent},
             data=data,
         )
-        if changed_create_subfolder_enabled:
-            self.call(
-                "post",
-                "/api/v2/app/setPreferences",
-                data={"json": json.dumps({"create_subfolder_enabled": True})},
-            )
 
     def remove(self, infohash):
         self.call(
@@ -214,8 +191,6 @@ class QBittorrentClient(BaseClient):
         self.stop(infohash)
         current_download_path, contains_folder_name = self._get_download_path(infohash)
         files = self.get_files(infohash)
-        if contains_folder_name and not self._check_create_subfolder_enabled():
-            destination_path = destination_path / current_download_path.name
 
         move_files(current_download_path, destination_path, files)
         if contains_folder_name:
