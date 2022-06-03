@@ -6,7 +6,7 @@ from .parse_clients import parse_clients_from_toml_dict
 from .torrent import *
 from .utils import TorrentProblems
 
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 
 __all__ = [
     "DelugeClient",
