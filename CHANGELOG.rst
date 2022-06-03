@@ -2,6 +2,17 @@
 Changelog
 ================================
 
+Version 1.3.0 (03-06-2022)
+--------------------------------
+
+* Added: Test matrix for multiple ubuntu releases
+
+* Change: Bumped and unbounded version of some requirements
+
+* Bugfix: Changed how qbittorrent handles subfolders
+* Bugfix: Transmission 3 torrent location
+* Bugfix: Fixed qbittorrent torrent file retrival problem in newer versions
+
 Version 1.2.3 (30-05-2022)
 --------------------------------
 

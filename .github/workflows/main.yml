@@ -18,13 +18,21 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        dockerimage: [
+          johndoee/test-libtc:20.04,
+          johndoee/test-libtc:22.04
+        ]
+
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
       - name: Pull docker image
-        run: docker pull johndoee/test-libtc
+        run: docker pull johndoee/test-libtc:20.04
 
       - name: Run tests in image
-        run: docker run --rm -v ${GITHUB_WORKSPACE}/libtc:/libtc johndoee/test-libtc pytest "/libtc/"
+        run: docker run --rm -v ${GITHUB_WORKSPACE}/libtc:/libtc ${{ matrix.dockerimage }} pytest -p no:cacheprovider "/libtc/"
+

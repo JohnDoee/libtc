@@ -228,7 +228,7 @@ class TransmissionClient(BaseClient):
             raise FailedToExecuteException("Session path is not configured")
         torrent_path = self.session_path / "torrents"
         for f in torrent_path.iterdir():
-            if f.name.endswith(f".{infohash[:16]}.torrent"):
+            if f.name.endswith(f".{infohash[:16]}.torrent") or f.name == f"{infohash}.torrent":
                 return f.read_bytes()
         raise FailedToExecuteException("Torrent file does not exist")
 

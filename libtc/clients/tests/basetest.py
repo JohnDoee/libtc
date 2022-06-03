@@ -215,10 +215,13 @@ def test_retrieve_torrent(client, testfiles):
             }
         ],
     )
+    time.sleep(2) # qBittorrent has a delay before it saves trackers
     retrieved_torrent_data = bdecode(client.retrieve_torrentfile(infohash))
     assert (
         hashlib.sha1(bencode(retrieved_torrent_data[b"info"])).hexdigest() == infohash
     )
+    assert retrieved_torrent_data.get(b"announce") == torrent_data.get(b"announce")
+    assert retrieved_torrent_data.get(b"announce-list") == torrent_data.get(b"announce-list")
 
     client.remove(infohash)
 

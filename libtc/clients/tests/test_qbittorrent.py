@@ -47,19 +47,31 @@ def client(request):
         else:
             p.kill()
             pytest.fail("Unable to start qbittorrent")
-        client.call(
-            "post",
-            "/api/v2/app/setPreferences",
-            data={"json": json.dumps({"create_subfolder_enabled": request.param})},
-        )
-        yield client
-        if (
-            client.call("get", "/api/v2/app/preferences").json()[
-                "create_subfolder_enabled"
-            ]
-            != request.param
-        ):
-            pytest.fail("Settings were modified when they should not have been")
+        if "create_subfolder_enabled" in client.call("get", "/api/v2/app/preferences").json():
+            client.call(
+                "post",
+                "/api/v2/app/setPreferences",
+                data={"json": json.dumps({"create_subfolder_enabled": request.param})},
+            )
+            yield client
+            if (
+                client.call("get", "/api/v2/app/preferences").json()[
+                    "create_subfolder_enabled"
+                ]
+               != request.param
+           ):
+                pytest.fail("Settings were modified when they should not have been")
+        else:
+            if request.param:
+                torrent_content_layout = "Original"
+            else:
+                torrent_content_layout = "NoSubfolder"
+            client.call(
+                "post",
+                "/api/v2/app/setPreferences",
+                data={"json": json.dumps({"torrent_content_layout": torrent_content_layout})},
+            )
+            yield client
         p.kill()
 
 

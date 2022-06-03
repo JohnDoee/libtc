@@ -6,7 +6,7 @@ import requests
 from requests.exceptions import RequestException
 
 from ..baseclient import BaseClient
-from ..bencode import bencode
+from ..bencode import bencode, bdecode
 from ..exceptions import FailedToExecuteException
 from ..torrent import TorrentData, TorrentFile, TorrentState
 from ..utils import (
@@ -135,6 +135,7 @@ class QBittorrentClient(BaseClient):
             "skip_checking": (fast_resume and "true" or "false"),
             "autoTMM": "false",
             "root_folder": add_name_to_folder,
+            "contentLayout": (add_name_to_folder and "Original" or "NoSubfolder")
         }
         if stopped:
             data["paused"] = "true"
@@ -157,9 +158,23 @@ class QBittorrentClient(BaseClient):
         if not self.session_path:
             raise FailedToExecuteException("Session path is not configured")
         torrent_path = self.session_path / "data" / "BT_backup" / f"{infohash}.torrent"
+        torrent_resume_path = self.session_path / "data" / "BT_backup" / f"{infohash}.fastresume"
+
         if not torrent_path.is_file():
             raise FailedToExecuteException("Torrent file does not exist")
-        return torrent_path.read_bytes()
+        torrent_data = bdecode(torrent_path.read_bytes())
+        if b'announce' not in torrent_data:
+            if not torrent_resume_path.is_file():
+                raise FailedToExecuteException("Torrent resume file does not exist")
+            torrent_resume_data = bdecode(torrent_resume_path.read_bytes())
+            trackers = torrent_resume_data.get(b'trackers')
+            if not trackers:
+                raise FailedToExecuteException("No trackers found in torrent file")
+            torrent_data[b"announce"] = trackers.pop(0)[0]
+            if trackers:
+                torrent_data[b"announce-list"] = trackers
+
+        return bencode(torrent_data)
 
     def get_download_path(self, infohash):
         return self._get_download_path(infohash)[0]
