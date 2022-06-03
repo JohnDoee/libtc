@@ -10,6 +10,7 @@ from libtc import DelugeClient
 
 from .basetest import *
 
+
 @pytest.fixture(
     scope="module",
     params=[

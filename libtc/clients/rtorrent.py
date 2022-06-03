@@ -2,7 +2,7 @@ import logging
 import re
 from datetime import datetime
 from pathlib import Path
-from urllib.parse import urlencode, urlsplit, quote
+from urllib.parse import quote, urlencode, urlsplit
 from xml.parsers.expat import ExpatError
 from xmlrpc.client import Error as XMLRPCError
 from xmlrpc.client import ServerProxy
@@ -224,7 +224,7 @@ class RTorrentClient(BaseClient):
         else:
             cmd.append(f'd.directory_base.set="{destination_path!s}"')
         if self.label:
-            cmd.append(f'd.custom1.set={quote(self.label)}')
+            cmd.append(f"d.custom1.set={quote(self.label)}")
         logger.info(f"Sending to rtorrent: {cmd!r}")
         try:  # TODO: use torrent_temp_path if payload is too big
             if stopped:
