@@ -180,3 +180,13 @@ class TorrentProblems:
     STRIPPED_PREFIX_POSTFIX = [b" ", b"."]
     MAX_PATH_LENGTH = 260
     EMOJIS = []  # TODO: add emojis that e.g. transmission chokes on
+
+
+def rewrite_path(path, path_mapping):
+    for k, v in path_mapping.items():
+        try:
+            p = path.relative_to(k)
+            return v / p
+        except ValueError:
+            pass
+    return path

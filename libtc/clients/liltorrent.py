@@ -8,16 +8,7 @@ from ..baseclient import BaseClient
 from ..bencode import bencode
 from ..exceptions import FailedToExecuteException
 from ..torrent import TorrentData, TorrentFile
-
-
-def rewrite_path(path, path_mapping):
-    for k, v in path_mapping.items():
-        try:
-            p = path.relative_to(k)
-            return v / p
-        except ValueError:
-            pass
-    return path
+from ..utils import rewrite_path
 
 
 class LilTorrentClient(BaseClient):

@@ -15,7 +15,7 @@ setup(
     version=__version__,
     url="https://github.com/JohnDoee/libtc",
     author="Anders Jensen",
-    author_email="jd@tridentstream.org",
+    author_email="andersandjensen@gmail.com",
     description="Bittorrent client library",
     long_description=readme(),
     long_description_content_type="text/x-rst",
@@ -32,13 +32,16 @@ setup(
     tests_require=["pytest",],
     extras_require={"liltorrent": ["Flask~=1.1.2", "waitress~=1.4.3"]},
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
     entry_points={
         "console_scripts": [
