@@ -114,7 +114,7 @@ def move_files(source_path, target_path, files, preserve_parent_folder=False):
                 source_file_parent = source_file_parent.parent
                 target_file_parent = target_file_parent.parent
 
-            if target_path not in target_file_parent.resolve().parents:
+            if target_path not in Path(os.path.abspath(target_file_parent)).parents:
                 raise Exception()
             target_file_parent.mkdir()
             shutil.copystat(source_file_parent, target_file_parent)
@@ -127,7 +127,7 @@ def move_files(source_path, target_path, files, preserve_parent_folder=False):
             potential_removal_folders.add(source_parent_folder)
             source_parent_folder = source_parent_folder.parent
 
-        if target_path not in target_file.resolve().parents:
+        if target_path not in Path(os.path.abspath(target_file)).parents:
             raise Exception()
 
         source_file.rename(target_file)

@@ -1,5 +1,6 @@
 import base64
 import json
+import os
 import logging
 from datetime import datetime
 from pathlib import Path
@@ -143,7 +144,7 @@ class TransmissionClient(BaseClient):
         self.call(
             "torrent-set-location",
             ids=[infohash],
-            location=str(destination_path.resolve()),
+            location=os.path.abspath(destination_path),
             move=True,
         )
 
@@ -190,7 +191,7 @@ class TransmissionClient(BaseClient):
             )
         if current_expected_data != "full":
             fast_resume = False
-        destination_path = destination_path.resolve()
+        destination_path = Path(os.path.abspath(destination_path))
         encoded_torrent = base64.b64encode(bencode(torrent)).decode()
 
         name = torrent[b"info"][b"name"].decode()

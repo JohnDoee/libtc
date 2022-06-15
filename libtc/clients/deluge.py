@@ -1,5 +1,6 @@
 import base64
 import hashlib
+import os
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlencode
@@ -131,7 +132,7 @@ class DelugeClient(BaseClient):
             raise FailedToExecuteException(
                 f"Minimum expected data not reached, wanted {minimum_expected_data} actual {current_expected_data}"
             )
-        destination_path = destination_path.resolve()
+        destination_path = Path(os.path.abspath(destination_path))
         encoded_torrent = base64.b64encode(bencode(torrent))
         infohash = hashlib.sha1(bencode(torrent[b"info"])).hexdigest()
         options = {"download_location": str(destination_path), "seed_mode": fast_resume}
@@ -217,7 +218,7 @@ class DelugeClient(BaseClient):
     def move_torrent(self, infohash, destination_path):
         try:
             with self.client as client:
-                client.core.move_storage([infohash], str(destination_path.resolve()))
+                client.core.move_storage([infohash], os.path.abspath(destination_path))
         except (DelugeClientException, ConnectionError, OSError):
             raise FailedToExecuteException("Failed to move torrent")
 

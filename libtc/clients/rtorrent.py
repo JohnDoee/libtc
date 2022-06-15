@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 from datetime import datetime
 from pathlib import Path
@@ -174,7 +175,7 @@ class RTorrentClient(BaseClient):
             raise FailedToExecuteException(
                 f"Minimum expected data not reached, wanted {minimum_expected_data} actual {current_expected_data}"
             )
-        destination_path = destination_path.resolve()
+        destination_path = Path(os.path.abspath(destination_path))
 
         if fast_resume:
             logger.info("Adding fast resume data")
@@ -340,10 +341,10 @@ class RTorrentClient(BaseClient):
         if scgi_method == "port":
             scgi_url = scgi_url.strip()
         else:
-            scgi_url = Path(scgi_url.strip()).expanduser().resolve()
+            scgi_url = Path(os.path.abspath(Path(scgi_url.strip()).expanduser()))
 
         client = cls(f"scgi://{scgi_url}")
-        session_path = Path(client.proxy.session.path()).resolve()
+        session_path = Path(os.path.abspath(Path(client.proxy.session.path())))
         if session_path.is_dir():
             client.session_path = session_path
         return client
