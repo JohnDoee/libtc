@@ -5,6 +5,8 @@ Changelog
 Version 1.3.2 (15-06-2022)
 --------------------------------
 
+* Bugfix: symlinks should not be resolved
+
 Version 1.3.1 (03-06-2022)
 --------------------------------
 
