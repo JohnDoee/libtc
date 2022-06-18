@@ -232,8 +232,8 @@ class RTorrentClient(BaseClient):
                 self.proxy.load.raw("", *cmd)
             else:
                 self.proxy.load.raw_start("", *cmd)
-        except (XMLRPCError, ConnectionError, OSError, ExpatError):
-            raise FailedToExecuteException()
+        except (XMLRPCError, ConnectionError, OSError, ExpatError) as e:
+            raise FailedToExecuteException(f"Failed to add torrent: {e!r}")
 
     def remove(self, infohash):
         try:

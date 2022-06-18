@@ -2,6 +2,11 @@
 Changelog
 ================================
 
+Version 1.3.3 (18-06-2022)
+--------------------------------
+
+* Change: rtorrent shares more information about failures to add torrents
+
 Version 1.3.2 (15-06-2022)
 --------------------------------
 
