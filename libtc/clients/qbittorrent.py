@@ -21,11 +21,12 @@ class QBittorrentClient(BaseClient):
     identifier = "qbittorrent"
     display_name = "qBittorrent"
 
-    def __init__(self, url, username, password, session_path=None):
+    def __init__(self, url, username, password, session_path=None, label=None):
         self.url = url
         self.username = username
         self.password = password
         self.session_path = session_path and Path(session_path)
+        self.label = label
         self._session = requests.Session()
 
     def _call(self, _method, url, *args, **kwargs):
@@ -139,6 +140,8 @@ class QBittorrentClient(BaseClient):
         }
         if stopped:
             data["paused"] = "true"
+        if self.label:
+            data["tags"] = self.label
 
         self.call(
             "post",

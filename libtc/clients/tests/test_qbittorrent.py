@@ -47,6 +47,8 @@ def client(request):
         else:
             p.kill()
             pytest.fail("Unable to start qbittorrent")
+        if request.param:
+            client.label = "testlabel"
         if (
             "create_subfolder_enabled"
             in client.call("get", "/api/v2/app/preferences").json()
