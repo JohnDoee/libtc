@@ -23,6 +23,7 @@ jobs:
         dockerimage:
           - johndoee/test-libtc:20.04
           - johndoee/test-libtc:22.04
+          - johndoee/test-libtc:22.04-deluge-2.1.1
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
